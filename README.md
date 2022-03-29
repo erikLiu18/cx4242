@@ -9,6 +9,9 @@ These two lines in main.js need to be changed according to the server running:
 const serverUrl = "https://c6xxzyeqi59i.usemoralis.com:2053/server";
 const appId = "4k4UZvHipDvawqoOo0HqPUR6cnnMafK3pVzCDPhq";
 
+API Documentation:
+https://github.com/nft-api/nft-api/blob/main/README.md
+
 ## Run index.html
 Make sure you install MetaMask extension on Chrome
 Start by creating a local server: python -m http.server
