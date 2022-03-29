@@ -23,3 +23,7 @@ Logout logs you out of it.
 You may go to console to try the method created in main.js
 For example: type down getTrades() to get trades of an NFT item
 
+Somebody can change those method to take parameters!!!
+
+## Making API Calls
+You should look over the API doc referenced above to make sure you have the correct parameters such as contractID, blockchain(eth, bsc...), etc.
