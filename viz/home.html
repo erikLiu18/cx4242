@@ -71,20 +71,22 @@
       var results = data.result;
       const formatDate = d3.timeFormat("%b %d, %Y");
       const formatTime = d3.timeFormat("%H:%M:%S");
+      var prevValue = 0;
       results.forEach(function (c) {
         c.block_timestamp = utcParse(c.block_timestamp)
         c.date = new Date(formatDate(c.block_timestamp));
         c.time = new Date(formatTime(c.block_timestamp));
         if (c.value != "0") {
           c.value = parseFloat(c.value.substring(0,c.value.length-6))*10e-13
+          prevValue = c.value;
         } else {
-          c.value = parseFloat(c.value)
+          c.value = prevValue
         }     
       })
       console.log(results)
 
       var scaleX = d3.scaleTime()
-        .domain(d3.extent(results, function(d) {return d.date}))
+        .domain(d3.extent(results, function(d) {return d.block_timestamp}))
         .range([0, width]);
 
       var scaleY = d3.scaleLinear()
@@ -126,7 +128,7 @@
       var line = d3.line()
         .x(function(d) {return d.x})
         .y(function(d) {return d.y})
-        .curve(d3.curveMonotoneX)
+        .curve(d3.curveNatural)
 
       var line_graph = container.append("g")
         .attr("id", "line-graph");
