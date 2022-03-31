@@ -21,7 +21,7 @@
       <input type="text" id="col_address" name="col_address"><br>
       <label for="token_id">Token ID</label><br>
       <input type="text" id="token_id" name="token_id"><br><br>
-      <input type="submit" value="Submit">
+      <input type="button" value="Submit" onclick="generateGraph()">
     </form>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
@@ -52,21 +52,34 @@
       .attr("id", "container")
       .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
-
-    // Fetch the data
-  	var pathToCsv = "data.csv";
-    var options = {
-      address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      token_id: "8411"
-    };
-    
     // Time parser
     const utcParse = d3.utcParse("%Y-%m-%dT%H:%M:%S.%LZ");
+    var options = {
+      address: document.getElementById("col_address").value,
+      token_id: document.getElementById("token_id").value
+    };
+    console.log(options)
+    var firstTime = true
 
-    console.log(options.address)
-
-
-    var a = Moralis.Web3API.token.getWalletTokenIdTransfers(options).then(function(data) {
+    async function generateGraph(){
+      firstTime = false
+      var options = {
+      address: document.getElementById("col_address").value,
+      token_id: document.getElementById("token_id").value
+      };
+      console.log(options)
+      var a = Moralis.Web3API.token.getWalletTokenIdTransfers(options)
+      .then(function(data){
+      if(!firstTime){
+        svg.remove()
+        svg = d3.select("body").append("svg")
+                    .attr("id", "line_chart")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+        container = svg.append("g")
+                        .attr("id", "container")
+                        .attr("transform","translate(" + margin.left + "," + margin.top + ")");
+      }
       console.log(data);
       var results = data.result;
       const formatDate = d3.timeFormat("%b %d, %Y");
@@ -144,8 +157,7 @@
           )
     }).catch(function (error) {
       console.log(error);
-    });
-
+    });}
 
 
       //console.log(data.length)
