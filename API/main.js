@@ -41,6 +41,31 @@ async function logOut() {
   console.log("logged out");
 }
 
+async function getTransfers(nft_address,iteration,listOfTransfers,page){
+  var iteration = iteration + 1;
+  console.log(iteration)
+
+  if(page == 0){
+    var options = {address: nft_address}
+  }
+  else{
+    var options = {address: nft_address, cursor:page}
+  }
+
+  Moralis.Web3API.token.getContractNFTTransfers(options).then(response => {
+    if(response.total+500 <= iteration*500){
+      console.log(listOfTransfers)
+    }
+    else{
+      returnList = listOfTransfers.concat(response.result)
+      console.log(response.cursor)
+      setTimeout(() => {getTransfers(nft_address,iteration,returnList,response.cursor)},250);
+    }
+  })
+}
+
+
+
 
 
 document.getElementById("btn-login").onclick = login;
