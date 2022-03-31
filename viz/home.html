@@ -69,8 +69,12 @@
     var a = Moralis.Web3API.token.getWalletTokenIdTransfers(options).then(function(data) {
       console.log(data);
       var results = data.result;
+      const formatDate = d3.timeFormat("%b %d, %Y");
+      const formatTime = d3.timeFormat("%H:%M:%S");
       results.forEach(function (c) {
         c.block_timestamp = utcParse(c.block_timestamp)
+        c.date = new Date(formatDate(c.block_timestamp));
+        c.time = new Date(formatTime(c.block_timestamp));
         if (c.value != "0") {
           c.value = parseFloat(c.value.substring(0,c.value.length-6))*10e-13
         } else {
@@ -79,8 +83,8 @@
       })
       console.log(results)
 
-      var scaleX = d3.scaleOrdinal()
-        .domain(d3.extent(results, function(d) {return d.block_timestamp}))
+      var scaleX = d3.scaleTime()
+        .domain(d3.extent(results, function(d) {return d.date}))
         .range([0, width]);
 
       var scaleY = d3.scaleLinear()
@@ -92,8 +96,8 @@
 
       xAxis.append("g")
 	      .attr("transform", "translate(0," + height + ")")
-	      .attr("id", "x_axis")
-	      .call(d3.axisBottom(scaleX));
+	      .attr("id", "x_axis")       
+	      .call(d3.axisBottom(scaleX).tickFormat(d3.timeFormat("%b %Y")));
 
       xAxis.append("text")
 	      .attr("id", "x_axis_label")
@@ -118,6 +122,24 @@
         .attr("y", -height/8)
         .attr("transform", "rotate(-90)")
         .text("Price");
+
+      var line = d3.line()
+        .x(function(d) {return d.x})
+        .y(function(d) {return d.y})
+        .curve(d3.curveMonotoneX)
+
+      var line_graph = container.append("g")
+        .attr("id", "line-graph");
+
+      line_graph.append("path")
+        .datum(results)
+        .style("stroke", "black")
+        .style("fill", "none")
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+          .x(function(d) {return scaleX(d.date)})
+          .y(function(d) {return scaleY(d.value)})
+          )
     }).catch(function (error) {
       console.log(error);
     });
