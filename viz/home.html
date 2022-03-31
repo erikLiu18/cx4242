@@ -15,14 +15,20 @@
 </head>
 
 <body>
+  <form>
+    <label for="col_address">Collection Hash</label><br>
+    <input type="text" id="col_address" name="col_address"><br>
+    <label for="token_id">Token ID</label><br>
+    <input type="text" id="token_id" name="token_id"><br><br>
+    <input type="submit" value="Submit">
+  </form>
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
   <script type="text/javascript" src="/lib/d3.v5.min.js"></script>
   <script type="text/javascript" src="/lib/d3-dsv.min.js"></script>
-
-  <!-- Example hiding an element -->
-  <!-- <g id="" style"display:none;" /> -->
-
-  <!-- Example of styling an element -->
-  <!-- svg_element.style()-->
+  <button id="btn-login">Moralis Metamask Login</button>
+  <button id="btn-logout">Logout</button>
+  <script type="text/javascript" src="./main.js"></script>
 
   <script>
     // define the dimensions and margins for the line chart
@@ -51,6 +57,14 @@
     // Time parser
     const utcParse = d3.utcParse("%Y-%m-%dT%H:%M:%S.%LZ");
 
+    console.log(token_id)
+
+    console.log()
+    const options = {
+      address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
+      token_id: "1"
+    };
+    var a = Moralis.Web3API.token.getWalletTokenIdTransfers(options).then((console.log(a)))
     d3.dsv(",", pathToCsv, function (d) {
       return {
         // format data attributes if required
@@ -63,7 +77,32 @@
       }
     }).then(function (data) {
       console.log(data); // you should see the data in your browser's developer tools console
+
+      //console.log(data.length)
+
+      var scaleX = d3.scaleOrdinal()
+        .domain(d3.extent(data, function(d) {return d.time}))
+        .range([0, width]);
+
+      var scaleY = d3.scaleLinear()
+        .domain([0, d3.max(data, function(d){return d.cost;})])
+        .range([height, 0]);
       
+      var xAxis = container.append("g")
+        .attr("id", "xAxis")
+
+      xAxis.append("g")
+	      .attr("transform", "translate(0," + height + ")")
+	      .attr("id", "x_axis")
+	      .call(d3.axisBottom(scaleX));
+
+      xAxis.append("text")
+	      .attr("id", "x_axis_label")
+	      .attr("class", "x label")
+      	.attr("text-anchor", "middle")
+	      .attr("x", width/2)
+	      .attr("y", height+40)
+	      .text("Year");
       //Line chart
       /*
       var ratings2015 = [];
