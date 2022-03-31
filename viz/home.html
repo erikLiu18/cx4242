@@ -15,13 +15,15 @@
 </head>
 
 <body>
-  <form>
-    <label for="col_address">Collection Hash</label><br>
-    <input type="text" id="col_address" name="col_address"><br>
-    <label for="token_id">Token ID</label><br>
-    <input type="text" id="token_id" name="token_id"><br><br>
-    <input type="submit" value="Submit">
-  </form>
+  <div id="data_form">
+    <form id="form" action="">
+      <label for="col_address">Collection Hash</label><br>
+      <input type="text" id="col_address" name="col_address"><br>
+      <label for="token_id">Token ID</label><br>
+      <input type="text" id="token_id" name="token_id"><br><br>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
   <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
   <script type="text/javascript" src="/lib/d3.v5.min.js"></script>
@@ -53,39 +55,36 @@
 
     // Fetch the data
   	var pathToCsv = "data.csv";
-
+    var options = {
+      address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
+      token_id: "8411"
+    };
+    
     // Time parser
     const utcParse = d3.utcParse("%Y-%m-%dT%H:%M:%S.%LZ");
 
-    console.log(token_id)
+    console.log(options.address)
 
-    console.log()
-    const options = {
-      address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      token_id: "1"
-    };
-    var a = Moralis.Web3API.token.getWalletTokenIdTransfers(options).then((console.log(a)))
-    d3.dsv(",", pathToCsv, function (d) {
-      return {
-        // format data attributes if required
-        seller: d["Seller"],
-        buyer: d["Buyer"],
-        collection_id: d["Collection_ID"], 
-        token_id: d["Token_ID"],
-        time: utcParse(d["TimeStamp"]),
-        cost: +d["Value"] * 2 //change this when ETH has been converted to USD
-      }
-    }).then(function (data) {
-      console.log(data); // you should see the data in your browser's developer tools console
 
-      //console.log(data.length)
+    var a = Moralis.Web3API.token.getWalletTokenIdTransfers(options).then(function(data) {
+      console.log(data);
+      var results = data.result;
+      results.forEach(function (c) {
+        c.block_timestamp = utcParse(c.block_timestamp)
+        if (c.value != "0") {
+          c.value = parseFloat(c.value.substring(0,c.value.length-6))*10e-13
+        } else {
+          c.value = parseFloat(c.value)
+        }     
+      })
+      console.log(results)
 
       var scaleX = d3.scaleOrdinal()
-        .domain(d3.extent(data, function(d) {return d.time}))
+        .domain(d3.extent(results, function(d) {return d.block_timestamp}))
         .range([0, width]);
 
       var scaleY = d3.scaleLinear()
-        .domain([0, d3.max(data, function(d){return d.cost;})])
+        .domain([0, d3.max(results, function(d){return d.value;})])
         .range([height, 0]);
       
       var xAxis = container.append("g")
@@ -98,11 +97,35 @@
 
       xAxis.append("text")
 	      .attr("id", "x_axis_label")
-	      .attr("class", "x label")
+	      .attr("class", "x-label")
       	.attr("text-anchor", "middle")
 	      .attr("x", width/2)
 	      .attr("y", height+40)
 	      .text("Year");
+
+      var yAxis = container.append("g")
+        .attr("id", "yAxis")
+
+      yAxis.append("g")
+        .attr("id", "y_axis")
+        .call(d3.axisLeft(scaleY));
+
+      yAxis.append("text")
+        .attr("id", "y-label")
+        .style("fill", "black")
+        .attr("text-anchor", "middle")
+        .attr("x", -200)
+        .attr("y", -height/8)
+        .attr("transform", "rotate(-90)")
+        .text("Price");
+    }).catch(function (error) {
+      console.log(error);
+    });
+
+
+
+      //console.log(data.length)
+
       //Line chart
       /*
       var ratings2015 = [];
@@ -451,10 +474,6 @@
             .attr("id", "bar_y_axis_label")
        }
       */
-    }).catch(function (error) {
-      console.log(error);
-    });
-
 
   </script>
 
