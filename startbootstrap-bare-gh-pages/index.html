@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Bare - Start Bootstrap Template</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Responsive navbar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="#">Start Bootstrap</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Link</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Dropdown</a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="#">Action</a></li>
+                                <li><a class="dropdown-item" href="#">Another action</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" href="#">Something else here</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page content-->
+        <div class="container">
+            <div class="text-center mt-5">
+                <h1>A Bootstrap 5 Starter Template</h1>
+                <p class="lead">A complete project boilerplate built with Bootstrap</p>
+                <p>Bootstrap v5.1.3</p>
+            </div>
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+        <script type="text/javascript" src="./lib/d3.v5.min.js"></script>
+        <script type="text/javascript" src="./lib/d3-dsv.min.js"></script>
+        <script>
+            // define the dimensions and margins for the line chart
+            // Use the same Margin Convention from HW1 Q3: https://poloclub.github.io/cse6242-2022spring-online/hw1/8rEHLaYmr9 _margin_convention.pdf to layout your graph
+            var margin = {top: 20, right: 20, bottom: 20, left: 20},
+            padding = {top: 60, right: 60, bottom: 60, left: 60},
+            padding_bar = {top: 20, right: 60, bottom: 60, left: 200},
+            outerWidth = 960,
+            outerHeight = 500,
+            innerWidth = outerWidth - margin.left - margin.right,
+            innerHeight = outerHeight - margin.top - margin.bottom,
+            width = innerWidth - padding.left - padding.right,
+            height = innerHeight - padding.top - padding.bottom;
+        
+            // define the dimensions and margins for the bar chart
+        
+        
+            // append svg element to the body of the page
+            // set dimensions and position of the svg element
+            var svg_line = d3.select("body").append("svg")
+                .attr("id", "line_chart")
+                .attr("width", outerWidth)
+                .attr("height", outerHeight)
+                .append("g")
+                .attr("id", "container")
+                .attr("transform",
+                "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")");
+        
+            var bar_chart_title = d3.select("body").append("div")
+              .attr("id", "bar_chart_title")
+              .style("display", "none");
+        
+            var svg_bar_orig = d3.select("body").append("svg")
+                .attr("id", "bar_chart")
+                .attr("width", outerWidth)
+                .attr("height", outerHeight)
+                .style("display", "none");
+        
+            var svg_bar = svg_bar_orig.append("g")
+                .attr("id", "container_2")
+                .attr("transform",
+                "translate(" + (margin.left + padding_bar.left) + "," + (margin.top + padding_bar.top) + ")")
+                .attr("visibility", "hidden");
+            
+            d3.select("body").append("div")
+              .attr("id", "bar_chart_title");
+        
+            // Fetch the data
+              var pathToCsv = "./average-rating.csv";
+            var parseTime = d3.timeParse("%Y");
+        
+            
+            d3.dsv(",", pathToCsv, function (d) {
+              return {
+                name: d.name,
+                year: d.year,
+                average_rating: Math.floor(parseFloat(d.average_rating)),
+                users_rated: parseInt(d.users_rated)
+              }
+            }).then(function (data) {
+              console.log(data); // you should see the data in your browser's developer tools console
+        
+              var data_bar = null;
+              var show_bar = false;
+        
+              // ############################# data processing #############################
+        
+              data_lines = d3.nest()
+                .key(function(d) { return d.year })
+                .key(function(d) { return d.average_rating })
+                .entries(data);
+        
+              data_lines = data_lines.map(function(d) {
+                return {
+                  key: parseTime(d.key),
+                  values: d.values.map(function(c) {
+                    return {
+                      year: parseTime(d.key),
+                      key: parseInt(c.key),
+                      values: c.values,
+                      count: c.values.length
+                    }
+                  }).sort(function(x, y) {
+                    return d3.ascending(x.key, y.key);
+                  })
+                }
+              });
+        
+              var timeToYear = d3.timeFormat("%Y")
+        
+              data_lines = data_lines.filter(function(d) {
+                return timeToYear(d.key) >= "2015" && timeToYear(d.key) < "2020";
+              });
+        
+              console.log(data_lines);
+        
+              // ############################# Title #############################
+        
+              svg_line.append("text")
+                .attr("id", "line_chart_title")
+                .attr("x", d => width/2)
+                .attr("y", d => -30)
+                .text(d => "Board games by Rating 2015-2019")
+                .style("font-size", "20px")
+                .style("text-anchor", "middle");
+        
+              svg_line.append("text")
+                .attr("id", "credit")
+                .attr("x", d => width/2)
+                .attr("y", d => -10)
+                .text(d => "yliu3390")
+                .style("text-anchor", "middle")
+                .style("fill", "steelblue");
+        
+              // ############################# Domain #############################
+        
+              var count_max = d3.max(data_lines, function(d) {
+                return d3.max(d.values, function(c) { return c.count });
+              });
+              var rating_max = d3.max(data_lines, function(d) {
+                return d3.max(d.values, function(c) { return parseInt(c.key) })
+              })
+        
+              console.log(count_max);
+              console.log(rating_max);
+        
+              var x_lines = d3.scaleLinear().range([0, width]).domain([0, rating_max]);
+              var y_lines = d3.scaleLinear().range([height, 0]).domain([0, count_max]);
+        
+              console.log(x_lines.ticks());
+        
+              var data_lines = data_lines.map(function(d) {
+                // console.log("----");
+                return {
+                  key: d.key,
+                  values: x_lines.ticks().map(function(c) {
+                    // console.log(c);
+                    var c_values = d.values.filter(function(k) {
+                      return k.key == c;
+                    })
+        
+                    if (c_values.length == 0) {
+                      c_values = [{year: d.key, key: c, values: [], count: 0}]
+                    }
+        
+                    console.log(c_values);
+        
+                    c_values = c_values.map(function(k) {
+                      return k.values;
+                    })
+        
+                    return {
+                      year: d.key,
+                      key: c,
+                      values: c_values[0],
+                      count: c_values[0].length
+                    }
+                  })
+                }
+              });
+        
+              console.log(data_lines);
+        
+        
+              // ############################# Axis #############################
+        
+              // Add the X Axis
+              var xAxis_lines = d3.axisBottom(x_lines).ticks(9);
+              // Add the Y Axis
+              var yAxis_lines = d3.axisLeft(y_lines).ticks(11);
+        
+              var x_axis_lines = svg_line.append("g").attr("id", "x-axis-lines");
+              var y_axis_lines = svg_line.append("g").attr("id", "y-axis-lines");
+        
+              x_axis_lines.attr("class", "axis")
+                .attr("transform", "translate(0, " + height + ")")
+                .call(xAxis_lines);
+        
+              y_axis_lines.attr("class", "axis").call(yAxis_lines);
+        
+              x_axis_lines.append("text")
+                .attr('x', d => width/2)
+                .attr("y", d => 35)
+                .text(d => "Rating")
+                .style("font-size", "18px");
+        
+              y_axis_lines.append("text")
+                .attr('x', d => 0)
+                .attr("y", d => 0)
+                .attr("transform", "translate(-45, 150)rotate(270)")
+                .text(d => "Count")
+                .style("font-size", "18px");
+        
+        
+              // ############################# Lines #############################
+        
+              const color = d3.scaleOrdinal(d3.schemeCategory10);
+        
+              var valueline = d3.line()
+                .defined(function(d) { return d; })
+                .x(function(d) { return x_lines(parseInt(d.key)) })
+                .y(function(d) { return y_lines(parseInt(d.count)) });
+        
+              var lines = svg_line.append("g").attr("id", "lines");
+        
+              var lines_g = lines.selectAll("lines")
+                .data(data_lines)
+                .enter()
+                .append("g");
+        
+              lines_g.append("path")
+                .attr("class", "lines")
+                .attr("d", function(d) { return valueline(d.values) })
+                .style("stroke", function(d) { return color(d.key) })
+                .style("fill", "None");
+        
+              // ############################# Circles #############################
+        
+              var circles = svg_line.append("g").attr("id", "circles");
+              
+              var circles_g = circles.selectAll("g")
+                .data(data_lines)
+                .enter()
+                .append("g")
+                .style("fill", function(c) { return color(c.key) });
+        
+              var circle = circles_g.selectAll("circle")
+                .data(function(d) { return d.values })
+                .enter()
+                .append("circle")
+                .attr("cx", c => x_lines(c.key))
+                .attr("cy", c => y_lines(c.count))
+                .attr("r", "4")
+                .on("mouseover", function(d) {
+                    d3.select(this).attr("r", "8");
+                    if (d.count != 0) {
+                      handleMouseOver(d);
+                      data_bar = d;
+                      svg_bar_orig.style("display", "block");
+                      svg_bar.attr("visibility", "visible");
+                      bar_chart_title.style("display", "block");
+                      // console.log(data_bar);
+                    }
+                  })
+                .on("mouseout", function(d) {
+                  d3.select(this).attr("r", "4");
+                  if (d.count != 0) {
+                    svg_bar_orig.style("display", "none");
+                    svg_bar.attr("visibility", "hidden");
+                    bar_chart_title.style("display", "none");
+                    handleMouseOut(d);
+                  }
+                })
+        
+              // ############################# Legend #############################
+              
+              var legends_lines = svg_line.append("g").attr("id", "legend");
+        
+              legends_lines.selectAll("circle")
+                .data(data_lines)
+                .enter()
+                .append("circle")
+                .attr("cx", c => width - 40)
+                .attr("cy", function(d, i) {
+                  return 20 + i * 20;
+                })
+                .attr("r", "6")
+                .style("fill", c => color(c.key));
+        
+              legends_lines.selectAll("text")
+                .data(data_lines)
+                .enter()
+                .append("text")
+                .attr("x", c => width - 25)
+                .attr("y", function(d, i) {
+                  return 25 + i * 20;
+                })
+                .text(c => timeToYear(c.key));
+        
+              // ############################# End of Lines Chart #############################
+        
+              // ############################# Bar Chart #############################
+              
+              /* Create bar plot using data from csv */
+        
+              var x_bars = d3.scaleLinear();
+        
+              var y_bars = d3.scaleBand();
+        
+              var xAxis_bars = d3.axisBottom(x_bars).ticks(8);
+        
+              var yAxis_bars = d3.axisLeft(y_bars);
+        
+              var xAxis_grid = d3.axisBottom(x_bars).tickSize(-height).tickFormat('');
+        
+              function handleMouseOver(d) {
+                console.log(d);
+        
+                // ############################# Title #############################
+                bar_chart_title.text("Top 5 most rated games of " + timeToYear(d.year) + " with rating " + d.key)
+                  .style("position", "absolute")
+                  .style("left", "300px")
+                  .style("");
+        
+                // ############################# axis #############################
+                var top_games = d.values.sort(function(a, b) {
+                  return d3.descending(a.users_rated, b.users_rated);
+                }).slice(0, 5)
+                  .sort(function(a, b) {
+                    return d3.descending(a.users_rated, b.users_rated);
+                  }).map(function(d) {
+                    return {
+                      name: d.name.substring(0, 10),
+                      year: d.year,
+                      average_rating: d.average_rating,
+                      users_rated: d.users_rated
+                    }
+                  });
+        
+                var users_rated_max = d3.max(top_games, function(d) {
+                  return d.users_rated;
+                })
+        
+                console.log(top_games);
+        
+                console.log(users_rated_max);
+        
+                x_bars.range([0, width - 200]).domain([0, users_rated_max]);
+                y_bars.range([0, height]).domain(top_games.map(function(d) {
+                  return d.name;
+                })).padding(.1);
+        
+                // ############################# bars #############################
+        
+                var bars = svg_bar.append("g").attr("id", "bars").attr("class", "remove");
+        
+                bars.selectAll("myRect")
+                  .data(top_games)
+                  .enter()
+                  .append("rect")
+                  .attr("x", x_bars(0) )
+                  .attr("y", function(d) { return y_bars(d.name); })
+                  .attr("width", function(d) { return x_bars(d.users_rated); })
+                  .attr("height", y_bars.bandwidth() )
+                  .attr("fill", "#69b3a2");
+        
+        
+                var x_axis_bars = svg_bar.append("g").attr("id", "x-axis-bars");
+                var y_axis_bars = svg_bar.append("g").attr("id", "y-axis-bars");
+              
+                x_axis_bars.attr("class", "axis remove")
+                  .attr("transform", "translate(0, " + height + ")")
+                  .call(xAxis_bars);
+        
+                x_axis_bars.selectAll("text").attr("font-weight", "bold").attr("font-size", 14);
+        
+                y_axis_bars.attr("class", "axis remove").call(yAxis_bars);
+        
+                y_axis_bars.selectAll("text").attr("font-weight", "bold").attr("font-size", 14);
+        
+                // ############################# gridlines #############################
+        
+                x_grid_bars = x_axis_bars.append("g").attr("id", "x-grid-bars").call(xAxis_grid);
+        
+                x_grid_bars.select("path").remove();
+        
+                // ############################# axis labels #############################
+        
+                svg_bar.append("text")
+                  .attr("id", "bar_x_axis_label")
+                  .attr('x', d => width / 3 - 50)
+                  .attr("y", d => height + 40)
+                  .text(d => "Number of users")
+                  .style("font-size", "18px");
+                  
+        
+                svg_bar.append("text")
+                  .attr("id", "bar_y_axis_label")
+                  .attr('x', d => 0)
+                  .attr("y", d => 0)
+                  .attr("transform", "translate(-100, 200)rotate(270)")
+                  .text(d => "Games")
+                  .style("font-size", "18px");
+              }
+        
+              function handleMouseOut(d) {
+                svg_bar.selectAll(".remove").remove();
+              }
+        
+            }).catch(function (error) {
+              console.log(error);
+            });
+          </script>
+    </body>
+</html>
