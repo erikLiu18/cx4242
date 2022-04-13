@@ -96,7 +96,7 @@ async function getTransfers(nft_address,iteration,listOfTransfers,page){
     else{
       returnList = listOfTransfers.concat(response.result)
       console.log(response.cursor)
-      setTimeout(() => {getTransfers(nft_address,iteration,returnList,response.cursor)},40);
+      setTimeout(() => {getTransfers(nft_address,iteration,returnList,response.cursor)},1000);
     }
   })
 }
