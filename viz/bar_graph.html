@@ -123,6 +123,7 @@ bars.selectAll("rect")
         //Interactivity
         .on('click', clicked)
         .on('mouseover', mousedover)
+        .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY - 125)+"px").style("left",(d3.event.pageX - 150)+"px");})
         .on('mouseout', function (d) {
             tooltip.transition()
                 .duration(100)
@@ -163,8 +164,8 @@ function mousedover(d) {
         .duration(100)
         .style("opacity", 0.9)
     tooltip.html("Collection Name: " + d.collection + "<br/>5 Tokens with Highest Fraud Index: " + tooltip_text)
-        .style("left", this.x.baseVal.valueAsString + "px")		
-        .style("top", "250" + "px");	
+        .style("left", d3.event.pageX - 150 + "px")		
+        .style("top", d3.event.pageY - 125 + "px");	
 
 }
 
