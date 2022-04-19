@@ -48,21 +48,29 @@ var parseTime = d3.timeParse("%-m/%-d/%y")
 
 Promise.all([
 d3.csv("bar_data.csv", function(d) {
-return {
-    collection: d.collection,
-    ratio: +d.ratio,
-}
+    return {
+        collection: d.collection_name,
+        fraud_index: +d.fraud_index,
+    }
 }),
 d3.dsv(",", "washed_tokens.csv", function(d) {
-return {
-    collection: d.collection_name,
-    token_id: +d.token_id,
-    date: parseTime(d.date),
-    trades: +d.trades
-}
+    return {
+        collection: d.collection_name,
+        token_id: +d.token_id,
+        date: parseTime(d.date),
+        trades: +d.trades
+    }
+}),
+d3.csv("tooltip_data.csv", function(d) {
+    return {
+        collection: d.collection_name,
+        token_id: +d.token_id,
+        fraud_index: +d.fraud_index
+    }
 })
 ]).then(function(data) {
 trade_data = data[1]
+tooltip_data = data[2]
 data = data[0]
 console.log(data)
 
@@ -107,16 +115,25 @@ bars.selectAll("rect")
     .enter()
     .append("rect")
         .attr("x", function(d) {return scaleX(d.collection)})
-        .attr("y", function(d) {return scaleY(d.ratio)})
+        .attr("y", function(d) {return scaleY(d.fraud_index)})
         .attr("width", scaleX.bandwidth)
-        .attr("height", function(d) {return height - scaleY(d.ratio)})
+        .attr("height", function(d) {return height - scaleY(d.fraud_index)})
         .attr("fill", "blue")
         
         //Interactivity
         .on('click', clicked)
         .on('mouseover', mousedover)
+        .on('mouseout', function (d) {
+            tooltip.transition()
+                .duration(100)
+                .style("opacity", 0)
+        })
 
 var tooltip = d3.select("body").append("div")
+    .style("position", "absolute")
+    .style("z-index", "10")
+    .style("background", "#FFFFFF")
+    .style("white-space", "nowrap")
     .attr("class", "tooltip")
     .style("opacity", 0)
 
@@ -131,13 +148,23 @@ function clicked(d) {
 }
 
 function mousedover(d) {
-    console.log(d)
+    var w_tokens = tooltip_data.filter(i => i.collection === d.collection)
+    w_tokens = w_tokens.slice(0,5)
+
+    tooltip_text = ""
+    for (t in w_tokens) {
+        if (t == w_tokens.length - 1) {
+            tooltip_text += w_tokens[t].token_id + " (" + w_tokens[t].fraud_index.toFixed(2) + ")"
+        } else {
+        tooltip_text += w_tokens[t].token_id + " (" + w_tokens[t].fraud_index.toFixed(2) + "),<br/>"
+        }
+    }
     tooltip.transition()
         .duration(100)
         .style("opacity", 0.9)
-    tooltip.html("hi")
-        .style("left", (d3.event.pageX) + "px")		
-        .style("top", (d3.event.pageY - 28) + "px");	
+    tooltip.html("Collection Name: " + d.collection + "<br/>5 Tokens with Highest Fraud Index: " + tooltip_text)
+        .style("left", this.x.baseVal.valueAsString + "px")		
+        .style("top", "250" + "px");	
 
 }
 
