@@ -46,8 +46,8 @@ pointer-events: none;
 <script type="text/javascript" src="./lib/d3.v5.min.js"></script>
 <script>
 
-var margin = {top: 70, right: 150, bottom: 80, left: 110};
-var width = 1800 - margin.left - margin.right,
+var margin = {top: 70, right: 150, bottom: 80, left: 50};
+var width = 1100 - margin.left - margin.right,
 height = 500 - margin.top - margin.bottom;
 
 var svg = d3.select("body").append("svg")
@@ -171,6 +171,8 @@ var svg2 = d3.select("body").append("svg")
 var selected_collection = ""
 var init = true
 
+var acronyms = {"BAYC": "Bored Ape Yacht Club", "MAYC": "Mutant Ape Yacht Club", "WoW": "World of Women", "BAKC": "Bored Ape Kennel Club"}
+
 showCalendar()
 
 
@@ -196,6 +198,7 @@ function mousedover(d) {
 
 
 function clicked(d) {
+
     if (d3.select(this).style("fill") == "red") {
         d3.select(this).style("fill", "blue")
         selected_collection = ""
@@ -210,19 +213,33 @@ function clicked(d) {
 }
 
 
-function showCalendar() {
 
+function showCalendar() {
     var col_data = trade_data
     if (selected_collection != "") {
         col_data = trade_data.filter(i => i.collection === selected_collection)
     }
     col_data = col_data.filter(i => i.trades >= slider_val)
     col_data.sort((a, b) => a.date - b.date)
-
-    var dateValues = col_data.map(dv => ({
-        date: d3.timeDay(dv.date), 
+    
+    d = {}
+    for (entry in col_data) {
+        date = col_data[entry].date.toString()
+        
+        if (date in d) {
+            d[date].trades += 1
+        } else {
+            d[date] = {"date": date, "trades": 1}
+        }
+    }
+    d_array = Object.values(d)
+    console.log(d3.timeDay( new Date(d_array[1].date)))
+    var dateValues = d_array.map(dv => ({
+        date: d3.timeDay(new Date(dv.date)), 
         value: Math.log(Number(dv.trades))
     }))
+    console.log(dateValues)
+
     draw(dateValues)
 }
 
