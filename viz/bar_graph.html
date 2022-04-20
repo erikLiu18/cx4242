@@ -154,7 +154,7 @@ bars.selectAll("rect")
                 .style("opacity", 0)
         })
 //SLIDER
-data = [0,1,2,3,4,5,6,7] 
+data = [2,3,4,5,6,7] 
 var sliderStep = d3
 .sliderBottom()
 .min(d3.min(data))
@@ -163,7 +163,7 @@ var sliderStep = d3
 .tickFormat(d3.format(''))
 .ticks(5)
 .step(1)
-.default(0)
+.default(4)
 .on('onchange',function(value){slider_val = value; showCalendar(); console.log(slider_val)});
 ;
 
@@ -228,11 +228,11 @@ function clicked(d) {
         console.log('same rect')
         document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for all collections"
     } else {
-        d3.select(this).attr("selected","true")
         console.log('new rect')
-        var rects = d3.selectAll("rect").style("fill", "#27AE60").style("stroke-width","0px")
+        var rects = d3.selectAll("rect").style("fill", "#27AE60").style("stroke-width","0px").attr("selected","false")
         d3.select(this)
             .style("fill", "#186A3B").style("stroke","black").style("stroke-width","2px")
+        d3.select(this).attr("selected","true")
         selected_collection = d.collection
         document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for " + selected_collection
         showCalendar()
