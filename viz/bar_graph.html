@@ -12,7 +12,7 @@ stroke-width: 1.5px;
 circle {
 fill: #ccc;
 stroke: #fff;
-stroke: sol;
+stroke: black;
 stroke-width: 1.5px;
 }
 
@@ -94,7 +94,7 @@ var x_axis = container.append("g")
     .attr("transform", "translate(0," + height + ")")
     .append("text")
         .attr("id", "x-axis-label")
-        .style("fill", "sol")
+        .style("fill", "black")
         .attr("text-anchor", "middle")
         .attr("x", width/2)
         .attr("y", 40)
@@ -105,7 +105,7 @@ var y_axis = container.append("g")
     .call(d3.axisLeft(scaleY))
     .append("text")
         .attr("id", "y-axis-label")
-        .style("fill", "sol")
+        .style("fill", "black")
         .attr("text-anchor", "middle")
         .attr("x", -180)
         .attr("y", -height/9)
@@ -232,7 +232,7 @@ function clicked(d) {
         console.log('new rect')
         var rects = d3.selectAll("rect").style("fill", "#27AE60").style("stroke-width","0px")
         d3.select(this)
-            .style("fill", "#186A3B").style("stroke","sol").style("stroke-width","2px")
+            .style("fill", "#186A3B").style("stroke","black").style("stroke-width","2px")
         selected_collection = d.collection
         document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for " + selected_collection
         showCalendar()
