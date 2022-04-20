@@ -24,27 +24,17 @@ pointer-events: none;
 
 </style>
 <meta charset="utf-8">
-<title></title></head>
-
+<title>Abnormality detection in NFT Marketplace</title></head>
+<h1>Abnormality detection in NFT Marketplace</h1>
 <body>
-
-    <div class="range">
-        <input id="slider" type="range" min="2" max="7" value="2">
-        <div class="ticks">
-          <!-- You could generate the ticks based on your min, max & step values. -->
-          <span class="tick">2</span>
-          <span class="tick">3</span>
-          <span class="tick">4</span>
-          <span class="tick">5</span>
-          <span class="tick">6</span>
-          <span class="tick">7</span>
-        </div>
-      </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.2.1/d3-color.js"></script>
+<script src="https://unpkg.com/d3-simple-slider"></script>
 <script type="text/javascript" src="./lib/d3.v5.min.js"></script>
 <script>
+
+var slider_val = 0
 
 var margin = {top: 70, right: 150, bottom: 80, left: 50};
 var width = 1100 - margin.left - margin.right,
@@ -141,24 +131,51 @@ bars.selectAll("rect")
         .attr("y", function(d) {return scaleY(d.fraud_index)})
         .attr("width", scaleX.bandwidth)
         .attr("height", function(d) {return height - scaleY(d.fraud_index)})
-        .attr("fill", "blue")
+        .attr("fill", "#27AE60")
+        .attr("selected","false")
+
         
         //Interactivity
         .on('click', clicked)
         .on('mouseover', mousedover)
-        .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY - 125)+"px").style("left",(d3.event.pageX - 150)+"px");})
+        .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY - 200)+"px").style("left",(d3.event.pageX - 150)+"px");})
         .on('mouseout', function (d) {
+            if(d3.select(this).attr("selected") == "false"){
+                d3.select(this).style("fill", "#27AE60")
+            }
+            else{
+                d3.select(this).style("fill", "#186A3B")
+            }
             tooltip.transition()
                 .duration(100)
                 .style("opacity", 0)
         })
-//Slider
-document.getElementById("slider").addEventListener('input', sliderListener);
-var slider_val = 2
-function sliderListener() {
-    slider_val = parseInt(document.getElementById("slider").value)
-    showCalendar()
-}
+//SLIDER
+data = [0,1,2,3,4,5,6,7] 
+var sliderStep = d3
+.sliderBottom()
+.min(d3.min(data))
+.max(d3.max(data))
+.width(300)
+.tickFormat(d3.format(''))
+.ticks(5)
+.step(1)
+.default(0)
+.on('onchange',function(value){slider_val = value; showCalendar(); console.log(slider_val)});
+;
+
+var gStep = d3
+.select('div#slider-step')
+.append('svg')
+.attr('width', 500)
+.attr('height', 100)
+.append('g')
+.attr('transform', 'translate(30,30)');
+
+gStep.call(sliderStep);
+
+d3.select('p#value-step').text(d3.format('')(sliderStep.value()));
+//SLIDER
 
 //Calendar
 var svg2 = d3.select("body").append("svg")
@@ -177,9 +194,10 @@ showCalendar()
 
 
 function mousedover(d) {
+    d3.select(this).style("fill", "#48C9B0")
     var w_tokens = tooltip_data.filter(i => i.collection === d.collection)
     w_tokens = w_tokens.slice(0,5)
-
+    
     tooltip_text = ""
     for (t in w_tokens) {
         if (t == w_tokens.length - 1) {
@@ -198,22 +216,25 @@ function mousedover(d) {
 
 
 function clicked(d) {
-
-    if (d3.select(this).style("fill") == "red") {
-        d3.select(this).style("fill", "blue")
+    if (d3.select(this).attr("selected") == "true") {
+        d3.select(this).style("fill", "#27AE60").style("stroke-width","0px")
+        d3.select(this).attr("selected","false")
+        console.log(d3.select(this))
         selected_collection = ""
         showCalendar()
+        console.log('same rect')
+        document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for all collections"
     } else {
-        var rects = d3.selectAll("rect").style("fill", "blue")
+        d3.select(this).attr("selected","true")
+        console.log('new rect')
+        var rects = d3.selectAll("rect").style("fill", "#27AE60").style("stroke-width","0px")
         d3.select(this)
-            .style("fill", "red")
+            .style("fill", "#186A3B").style("stroke","black").style("stroke-width","2px")
         selected_collection = d.collection
+        document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for " + selected_collection
         showCalendar()
     }
 }
-
-
-
 function showCalendar() {
     var col_data = trade_data
     if (selected_collection != "") {
@@ -418,7 +439,19 @@ console.log(error);
 
 
 </script>
-<h3>Stack Overflow - Calendar Heatmap</h3>
-<h4>Daily number of answered posts</h4>
+<div>
+    <div style="width: 25%; float:left">
+        <h2>NFT Fraud Calendar Heatmap</h2>
+        <h4 id ="calendarHeader">Daily number of fraudulent tokens for all collections</h4>
+    </div>
+        
+    <div style="width: 75%; float:right">
+        <h4>Daily number of transactions per token threshold</h4>
+        <div class="row align-items-center">
+        <div class="col-sm"><div id="slider-step"></div></div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
