@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+
+<head>
+  <title>Line Charts</title>
+  <meta charset="utf-8">
+  <style>
+    .lines{
+      fill: none;
+      stroke: steelblue;
+      stroke-width: 2px;
+    }
+    text{
+      font-family: sans-serif;
+      fill: black;
+    }
+  </style>
+
+  <script type="text/javascript" src="../lib/d3.v5.min.js"></script>
+</head>
+
+<body>
+  <script>
+    var margin = {top: 20, right: 20, bottom: 20, left: 20},
+    padding = {top: 60, right: 140, bottom: 60, left: 60},
+    outerWidth = 960,
+    outerHeight = 500,
+    innerWidth = outerWidth - margin.left - margin.right,
+    innerHeight = outerHeight - margin.top - margin.bottom,
+    width = innerWidth - padding.left - padding.right,
+    height = innerHeight - padding.top - padding.bottom;
+
+    // create scales x & y for X and Y axis and set their ranges
+    var x = d3.scaleTime()
+        .range([0, width]);
+    var y = d3.scaleLinear()
+        .range([height, 0]);
+    var y_sqrt = d3.scaleSqrt()
+        .range([height, 0]);
+    var y_log = d3.scaleLog()
+        .range([height, 0]);
+
+    // append svg element to the body of the page
+    // set dimensions and position of the svg element
+    var svg_a = d3.select("body").append("svg")
+        .attr("id", "svg-a")
+        .attr("width", outerWidth)
+        .attr("height", outerHeight);
+
+    svg_a.append("text")
+        .attr("id", "title-a")
+        .attr("x", d => outerWidth/3)
+        .attr("y", d => 60)
+        .text(d => "Number of Ratings 2016-2020")
+        .style("font-size", "20px");
+
+    var svg_b = d3.select("body").append("svg")
+        .attr("id", "svg-b")
+        .attr("width", outerWidth)
+        .attr("height", outerHeight);
+
+    svg_b.append("text")
+        .attr("id", "title-b")
+        .attr("x", d => outerWidth/4)
+        .attr("y", d => 60)
+        .text(d => "Number of Ratings 2016-2020 with Rankings")
+        .style("font-size", "20px");
+
+    var svg_c_1 = d3.select("body").append("svg")
+        .attr("id", "svg-c-1")
+        .attr("width", outerWidth)
+        .attr("height", outerHeight);
+
+    svg_c_1.append("text")
+        .attr("id", "title-c-1")
+        .attr("x", d => outerWidth/4)
+        .attr("y", d => 60)
+        .text(d => "Number of Ratings 2016-2020 (Square root Scale)")
+        .style("font-size", "20px");
+
+    var svg_c_2 = d3.select("body").append("svg")
+        .attr("id", "svg-c-2")
+        .attr("width", outerWidth)
+        .attr("height", outerHeight);
+
+    svg_c_2.append("text")
+        .attr("id", "title-c-2")
+        .attr("x", d => outerWidth/4)
+        .attr("y", d => 60)
+        .text(d => "Number of Ratings 2016-2020 (Log Scale)")
+        .style("font-size", "20px");
+
+    // Get the data
+	  var pathToCsv = "./boardgame_ratings.csv";		// path to csv
+    var dataset = [];
+    var parseTime = d3.timeParse("%Y-%m-%d");
+
+    d3.dsv(",", pathToCsv).then(function (data) {
+
+      // ############################# Slices #############################
+      var slices = data.columns.slice(1).filter(function(d) {return d.includes("=count")}).map(function(id) {
+          return {
+              id: id.replace("=count", ""),
+              values: data.map(function(d){
+                  return {
+                    date: parseTime(d.date),
+                    count: parseInt(d[id], 10),
+                    rank: parseInt(d[id.replace("=count", "=rank")], 10)
+                  };
+              })
+          };
+      });
+
+      console.log(slices);
+      console.log(data);
+      dataset = data;
+
+      // ############################# Domain #############################
+      
+      // find max and min of all rating count
+      var max = d3.max(slices, function(d) {
+        return d3.max(d.values, function(c) { return c.count });
+      })
+
+      x.domain(d3.extent(data, function(d){ return parseTime(d.date) }));
+      y.domain([0, max]);
+      y_sqrt.domain([0, max]);
+      y_log.domain([1, max]);
+
+      // ############################# Plot #############################
+
+      var plot_a = svg_a.append("g")
+        .attr("id", "plot-a")
+        .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")");
+
+      var plot_b = svg_b.append("g")
+        .attr("id", "plot-b")
+        .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")");
+
+      var plot_c_1 = svg_c_1.append("g")
+        .attr("id", "plot-c-1")
+        .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")");
+
+      var plot_c_2 = svg_c_2.append("g")
+        .attr("id", "plot-c-2")
+        .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")");
+
+      // ############################# Axis #############################
+
+      // Add the X Axis
+      var xAxis = d3.axisBottom().scale(x).tickFormat(d3.timeFormat("%b %y"));
+
+      // x axis for a
+      var x_axis_a = plot_a.append("g").attr("id", "x-axis-a");
+      
+      x_axis_a.attr("class", "axis")
+        .attr("transform", "translate(0, " + height + ")")
+        .call(xAxis);
+
+      x_axis_a.append("text")
+        .attr('x', d => width/2)
+        .attr("y", d => 40)
+        .text(d => "Month")
+        .style("font-size", "14px");
+
+      // x axis for b
+      var x_axis_b = plot_b.append("g").attr("id", "x-axis-b");
+
+      x_axis_b.attr("class", "axis")
+        .attr("transform", "translate(0, " + height + ")")
+        .call(xAxis);
+
+      x_axis_b.append("text")
+        .attr('x', d => width/2)
+        .attr("y", d => 40)
+        .text(d => "Month")
+        .style("font-size", "14px");
+
+      // x axis for c-1
+      var x_axis_c_1 = plot_c_1.append("g").attr("id", "x-axis-c-1");
+
+      x_axis_c_1.attr("class", "axis")
+        .attr("transform", "translate(0, " + height + ")")
+        .call(xAxis);
+
+      x_axis_c_1.append("text")
+        .attr('x', d => width/2)
+        .attr("y", d => 40)
+        .text(d => "Month")
+        .style("font-size", "14px");
+
+      // x axis for c-2
+      var x_axis_c_2 = plot_c_2.append("g").attr("id", "x-axis-c-2");
+
+      x_axis_c_2.attr("class", "axis")
+        .attr("transform", "translate(0, " + height + ")")
+        .call(xAxis);
+
+      x_axis_c_2.append("text")
+        .attr('x', d => width/2)
+        .attr("y", d => 40)
+        .text(d => "Month")
+        .style("font-size", "14px");
+
+      // Add the Y Axis
+      var yAxis = d3.axisLeft(y).ticks(9);
+      var yAxis_sqrt = d3.axisLeft(y_sqrt).ticks(9);
+      var yAxis_log = d3.axisLeft(y_log).ticks(9);
+      
+      // y axis for a
+      var y_axis_a = plot_a.append("g").attr("id", "y-axis-a");
+
+      y_axis_a.attr("class", "axis")
+        .call(yAxis);
+
+      y_axis_a.append("text")
+        .attr('x', d => 0)
+        .attr("y", d => 0)
+        .attr("transform", "translate(-55," + height/3 + ")rotate(270)")
+        .text(d => "Num of Ratings")
+        .style("font-size", "14px");
+      
+      // y axis for b
+      var y_axis_b = plot_b.append("g").attr("id", "y-axis-b");
+
+      y_axis_b.attr("class", "axis")
+        .call(yAxis);
+
+      y_axis_b.append("text")
+        .attr('x', d => 0)
+        .attr("y", d => 0)
+        .attr("transform", "translate(-55," + height/3 + ")rotate(270)")
+        .text(d => "Num of Ratings")
+        .style("font-size", "14px");
+
+      // y axis for c-1
+      
+      var y_axis_c_1 = plot_c_1.append("g").attr("id", "y-axis-c-1");
+
+      y_axis_c_1.attr("class", "axis")
+        .call(yAxis_sqrt);
+
+      y_axis_c_1.append("text")
+        .attr('x', d => 0)
+        .attr("y", d => 0)
+        .attr("transform", "translate(-55," + height/3 + ")rotate(270)")
+        .text(d => "Num of Ratings")
+        .style("font-size", "14px");
+
+      // y axis for c-2
+      
+      var y_axis_c_2 = plot_c_2.append("g").attr("id", "y-axis-c-2");
+
+      y_axis_c_2.attr("class", "axis")
+        .call(yAxis_log);
+
+      y_axis_c_2.append("text")
+        .attr('x', d => 0)
+        .attr("y", d => 0)
+        .attr("transform", "translate(-55," + height/3 + ")rotate(270)")
+        .text(d => "Num of Ratings")
+        .style("font-size", "14px");
+
+      // ############################# Lines #############################
+
+      // color palette
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      var valueline = d3.line()
+        .x(function(d) { return x(d.date); })
+        .y(function(d) { return y(d.count); });
+
+      var valueline_sqrt = d3.line()
+        .x(function(d) { return x(d.date); })
+        .y(function(d) { return y_sqrt(d.count); });
+
+      var valueline_log = d3.line()
+        .x(function(d) { return x(d.date); })
+        .y(function(d) { return y_log(d.count); });
+
+      var lines_a = plot_a.append("g")
+        .attr("id", "lines-a");
+
+      var lines_b = plot_b.append("g")
+        .attr("id", "lines-b");
+
+      var lines_c_1 = plot_c_1.append("g")
+        .attr("id", "lines-c-1");
+
+      var lines_c_2 = plot_c_2.append("g")
+        .attr("id", "lines-c-2");
+
+      var lines_g_a = lines_a.selectAll("lines")
+        .data(slices)
+        .enter()
+        .append("g");
+
+      var lines_g_b = lines_b.selectAll("lines")
+        .data(slices)
+        .enter()
+        .append("g");
+
+      var lines_g_c_1 = lines_c_1.selectAll("lines")
+        .data(slices)
+        .enter()
+        .append("g");
+
+      var lines_g_c_2 = lines_c_2.selectAll("lines")
+        .data(slices)
+        .enter()
+        .append("g");
+      
+      // Plot a lines
+      lines_g_a.append("path")
+        .attr("class", "lines")
+        .attr("d", function(d) { return valueline(d.values); })
+        .style("stroke", function(d) { return color(d.id) });
+
+      lines_g_a.append("text") 
+        .datum(function(d) {
+            return {
+                id: d.id,
+                value: d.values[d.values.length - 1]}; 
+          })
+        .attr("transform", function(d) { 
+          return "translate(" + (x(d.value.date) + 5) + "," + (y(d.value.count) + 5) + ")"; 
+          })
+        .text(function(d) { return d.id; })
+        .style("font-size", 14)
+        .style("fill", function(d) { return color(d.id) });
+      
+      // Plot b lines
+      lines_g_b.append("path")
+      .attr("class", "lines")
+      .attr("d", function(d) { return valueline(d.values); })
+      .style("stroke", function(d) { return color(d.id) });
+
+      lines_g_b.append("text") 
+        .datum(function(d) {
+            return {
+                id: d.id,
+                value: d.values[d.values.length - 1]}; 
+          })
+        .attr("transform", function(d) { 
+          return "translate(" + (x(d.value.date) + 5) + "," + (y(d.value.count) + 5) + ")"; 
+          })
+        .text(function(d) { return d.id; })
+        .style("font-size", 14)
+        .style("fill", function(d) { return color(d.id) });
+
+      // Plot c-1 lines
+      lines_g_c_1.append("path")
+      .attr("class", "lines")
+      .attr("d", function(d) { return valueline_sqrt(d.values); })
+      .style("stroke", function(d) { return color(d.id) });
+
+      lines_g_c_1.append("text") 
+        .datum(function(d) {
+            return {
+                id: d.id,
+                value: d.values[d.values.length - 1]}; 
+          })
+        .attr("transform", function(d) { 
+          return "translate(" + (x(d.value.date) + 5) + "," + (y_sqrt(d.value.count) + 5) + ")"; 
+          })
+        .text(function(d) { return d.id; })
+        .style("font-size", 14)
+        .style("fill", function(d) { return color(d.id) });
+
+      // Plot c-2 lines
+      lines_g_c_2.append("path")
+      .attr("class", "lines")
+      .attr("d", function(d) { return valueline_log(d.values); })
+      .style("stroke", function(d) { return color(d.id) });
+
+      lines_g_c_2.append("text") 
+        .datum(function(d) {
+            return {
+                id: d.id,
+                value: d.values[d.values.length - 1]}; 
+          })
+        .attr("transform", function(d) { 
+          return "translate(" + (x(d.value.date) + 5) + "," + (y_log(d.value.count) + 5) + ")"; 
+          })
+        .text(function(d) { return d.id; })
+        .style("font-size", 14)
+        .style("fill", function(d) { return color(d.id) });
+
+      // ############################# Symbols #############################
+
+      var format = d3.timeFormat("%Y-%m-%d")
+      var xTickVal = xAxis.scale().ticks().map(function(d) {
+        return format(d);
+      });
+      var tick_records = slices.map(function(d) { 
+        return {
+              id: d.id,
+              values: d.values.filter(function(d) {
+                return xTickVal.includes(format(d.date));
+              })
+          };
+      });
+
+      var circle_slices = tick_records.filter(function(d) { 
+        return d.id == "Catan" || d.id == "Codenames" || d.id == "Terraforming Mars" || d.id == "Gloomhaven"; 
+        });
+
+      circle_slices = circle_slices.map(function(d) {
+        return {
+          id: d.id,
+          values: d.values.map(function(c) {
+            return {
+              id: d.id,
+              date: c.date,
+              count: c.count,
+              rank: c.rank
+            }
+          })
+        }
+      });
+
+      console.log(circle_slices);
+
+      // Plot b symbols
+      
+      var symbols_b = plot_b.append("g").attr("id", "symbols-b");
+
+      var circles_b = symbols_b.selectAll("g")
+        .data(circle_slices)
+        .enter()
+        .append("g");
+
+      circles_b.selectAll("circle")
+        .data(function(d) { return d.values;})
+        .enter()
+        .append("circle")
+        .attr("cx", c => x(c.date))
+        .attr("cy", c => y(c.count))
+        .attr("r", "12")
+        .style("fill", function(d) { return color(d.id) });
+
+      circles_b.selectAll("text")
+        .data(function(d) { return d.values; })
+        .enter()
+        .append("text")
+        .attr("x", c => x(c.date))
+        .attr("y", c => y(c.count) + 3)
+        .style("font-size", "10px")
+        .style("fill", "white")
+        .style("text-anchor", "middle")
+        .text(c => c.rank);
+    
+
+      // Plot c-1 symbols
+      var symbols_c_1 = plot_c_1.append("g").attr("id", "symbols-c-1");
+
+      var circles_c_1 = symbols_c_1.selectAll("g")
+        .data(circle_slices)
+        .enter()
+        .append("g");
+
+      circles_c_1.selectAll("circle")
+        .data(function(d) { return d.values;})
+        .enter()
+        .append("circle")
+        .attr("cx", c => x(c.date))
+        .attr("cy", c => y_sqrt(c.count))
+        .attr("r", "12")
+        .style("fill", function(d) { return color(d.id) });
+
+      circles_c_1.selectAll("text")
+        .data(function(d) { return d.values; })
+        .enter()
+        .append("text")
+        .attr("x", c => x(c.date))
+        .attr("y", c => y_sqrt(c.count) + 3)
+        .style("font-size", "10px")
+        .style("fill", "white")
+        .style("text-anchor", "middle")
+        .text(c => c.rank);
+
+      // Plot c-2 symbols
+      var symbols_c_2 = plot_c_2.append("g").attr("id", "symbols-c-2");
+
+      var circles_c_2 = symbols_c_2.selectAll("g")
+        .data(circle_slices)
+        .enter()
+        .append("g");
+
+      circles_c_2.selectAll("circle")
+        .data(function(d) { return d.values;})
+        .enter()
+        .append("circle")
+        .attr("cx", c => x(c.date))
+        .attr("cy", c => y_log(c.count))
+        .attr("r", "12")
+        .style("fill", function(d) { return color(d.id) });
+
+      circles_c_2.selectAll("text")
+        .data(function(d) { return d.values; })
+        .enter()
+        .append("text")
+        .attr("x", c => x(c.date))
+        .attr("y", c => y_log(c.count) + 3)
+        .style("font-size", "10px")
+        .style("fill", "white")
+        .style("text-anchor", "middle")
+        .text(c => c.rank);
+
+
+      // ############################# Legend #############################
+
+      // Add Plot b legend
+      var legend_b = svg_b.append("g").attr("id", "legend-b");
+      legend_b.append("circle")
+        .attr("cx", c => innerWidth - 40)
+        .attr("cy", c => innerHeight - 50)
+        .attr("r", "12")
+        .style("fill", "black");
+      legend_b.append("text")
+        .attr("x", c => innerWidth - 40)
+        .attr("y", c => innerHeight - 47)
+        .style("font-size", "10px")
+        .style("fill", "white")
+        .style("text-anchor", "middle")
+        .text(c => "rank");
+      legend_b.append("text")
+        .attr("x", c => innerWidth - 40)
+        .attr("y", c => innerHeight - 25)
+        .style("font-size", "12px")
+        .style("text-anchor", "middle")
+        .text(c => "BoardGameGeek Rank");
+
+      // Add Plot c-1 legend
+      var legend_c_1 = svg_c_1.append("g").attr("id", "legend-c-1");
+      legend_c_1.append("circle")
+        .attr("cx", c => innerWidth - 40)
+        .attr("cy", c => innerHeight - 50)
+        .attr("r", "12")
+        .style("fill", "black");
+      legend_c_1.append("text")
+        .attr("x", c => innerWidth - 40)
+        .attr("y", c => innerHeight - 47)
+        .style("font-size", "10px")
+        .style("fill", "white")
+        .style("text-anchor", "middle")
+        .text(c => "rank");
+      legend_c_1.append("text")
+        .attr("x", c => innerWidth - 40)
+        .attr("y", c => innerHeight - 25)
+        .style("font-size", "12px")
+        .style("text-anchor", "middle")
+        .text(c => "BoardGameGeek Rank");
+
+      // Add Plot c-2 legend
+      var legend_c_2 = svg_c_2.append("g").attr("id", "legend-c-2");
+      legend_c_2.append("circle")
+        .attr("cx", c => innerWidth - 40)
+        .attr("cy", c => innerHeight - 50)
+        .attr("r", "12")
+        .style("fill", "black");
+      legend_c_2.append("text")
+        .attr("x", c => innerWidth - 40)
+        .attr("y", c => innerHeight - 47)
+        .style("font-size", "10px")
+        .style("fill", "white")
+        .style("text-anchor", "middle")
+        .text(c => "rank");
+      legend_c_2.append("text")
+        .attr("x", c => innerWidth - 40)
+        .attr("y", c => innerHeight - 25)
+        .style("font-size", "12px")
+        .style("text-anchor", "middle")
+        .text(c => "BoardGameGeek Rank");
+    });
+  </script>
+  <div id='signature'>yliu3390</div>
+</body>
