@@ -78,7 +78,8 @@
             trade_data = data[1]
             tooltip_data = data[2]
             data = data[0]
-            console.log(data)
+
+            data.sort((a, b) => (a.fraud_index < b.fraud_index) ? 1 : -1)
 
             var scaleX = d3.scaleBand()
                 .range([0, width])
@@ -142,7 +143,7 @@
                     //Interactivity
                     .on('click', clicked)
                     .on('mouseover', mousedover)
-                    .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY - 200)+"px").style("left",(d3.event.pageX - 150)+"px");})
+                    .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY - 200)+"px").style("left",(d3.event.pageX - 70)+"px");})
                     .on('mouseout', function (d) {
                         if(d3.select(this).attr("selected") == "false"){
                             d3.select(this).style("fill", "#27AE60")
@@ -165,7 +166,7 @@
             .ticks(5)
             .step(1)
             .default(4)
-            .on('onchange',function(value){slider_val = value; showCalendar(); console.log(slider_val)});
+            .on('onchange',function(value){slider_val = value; showCalendar();});
 
             var gStep = d3
             .select('div#slider-step')
@@ -210,7 +211,7 @@
                     .duration(100)
                     .style("opacity", 0.9)
                 tooltip.html("Collection Name: " + d.collection + "<br/>5 Tokens with Highest Fraud Index: " + tooltip_text)
-                    .style("left", d3.event.pageX - 150 + "px")		
+                    .style("left", (d3.event.pageX + 1000) + "px")		
                     .style("top", d3.event.pageY - 125 + "px")
             }
 
@@ -219,13 +220,10 @@
                 if (d3.select(this).attr("selected") == "true") {
                     d3.select(this).style("fill", "#27AE60").style("stroke-width","0px")
                     d3.select(this).attr("selected","false")
-                    console.log(d3.select(this))
                     selected_collection = ""
                     showCalendar()
-                    console.log('same rect')
                     document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for all collections"
                 } else {
-                    console.log('new rect')
                     var rects = d3.selectAll("rect").style("fill", "#27AE60").style("stroke-width","0px").attr("selected","false")
                     d3.select(this)
                         .style("fill", "#186A3B").style("stroke","black").style("stroke-width","2px")
@@ -255,12 +253,11 @@
                     }
                 }
                 d_array = Object.values(d)
-                console.log(d3.timeDay( new Date(d_array[1].date)))
                 var dateValues = d_array.map(dv => ({
                     date: d3.timeDay(new Date(dv.date)), 
                     value: Math.log(Number(dv.trades))
                 }))
-                console.log(dateValues)
+                //console.log(dateValues)
 
                 draw(dateValues)
             }
@@ -272,7 +269,6 @@
                     .entries(dateValues)
                     .reverse();
 
-                console.log(years)
 
                 var values = dateValues.map(c => c.value);
                 var maxValue = d3.max(values);
