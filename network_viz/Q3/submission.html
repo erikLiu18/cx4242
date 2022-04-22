@@ -31,9 +31,9 @@
     <script>
       selected_collection = "Meebits"
 
-      updateAll(selected_collection);
+      updateNetwork(selected_collection);
 
-      function updateAll(collection) {
+      function updateNetwork(collection) {
         d3.dsv(",", "./page_rank_files/pr_top_100_" + collection + "_edge.csv", function(d) {
           return {
             source: d.source,

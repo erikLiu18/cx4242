@@ -2,23 +2,46 @@
 <html>
 <head>
     <style>
+        body {
+            /* vertical-align: middle; */
+            /* align-items: center;
+            margin-left: 2%;
+            margin-right: 2%;
+            margin-top: 1%;
+            margin-bottom: 1%; */
+            display:flex;
+            justify-content:center;
+            align-items: flex-start;
+            min-height:100vh;
+            background-color: rgb(255, 255, 255);
+        }
         path.link {
-        fill: none;
-        stroke: #666;
-        stroke-width: 1.5px;
+            fill: none;
+            stroke: #666;
+            stroke-width: 1.5px;
         }
 
         circle {
-        fill: #ccc;
-        stroke: #fff;
-        stroke: black;
-        stroke-width: 1.5px;
+            fill: #ccc;
+            stroke: #fff;
+            stroke: black;
+            stroke-width: 1.5px;
         }
 
         text {
-        fill: #000;
-        font: 10px sans-serif;
-        pointer-events: none;
+            fill: #000;
+            font: 10px;
+            pointer-events: none;
+        }
+
+        h1, h2, h3, h4, p {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .diagram-text {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10px;
         }
     </style>
     <meta charset="utf-8">
@@ -26,7 +49,7 @@
 </head>
 
 
-<h1>Abnormality detection in NFT Marketplace</h1>
+
 
 
 <body>
@@ -34,14 +57,48 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.2.1/d3-color.js"></script>
     <script src="https://unpkg.com/d3-simple-slider"></script>
     <script type="text/javascript" src="./lib/d3.v5.min.js"></script>
+    <div style="display: flex; flex-direction: column; padding-top: 2vh; max-width: 95%;">
+        <div>
+            <h1>Abnormality detection in NFT Marketplace</h1>
+            <p>In this project, we aim to......</p>
+        </div>
+        <div style="display: flex;">
+            <div style="display: flex; flex-direction: column;">
+                <div id="bar_chart_container">
+                    <h2>Top 14 NFT Collections by Trading Volume</h2>
+                </div>
+                <div id="calendar_container" style="display: flex; flex-direction: column;">
+                    <div style="display: flex;">
+                        <h2>NFT Fraud Calendar Heatmap</h2>
+                        <h4 id ="calendarHeader">Daily number of fraudulent tokens for all collections</h4>
+                    </div>
+                    <div style="display: flex;">
+                        <h4>Daily number of transactions per token threshold</h4>
+                        <div class="row align-items-center">
+                        <div class="col-sm"><div id="slider-step"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="network_container" style="display: flex; flex-direction: column;">
+                <h2>Network Diagram</h2>
+                <div class="row align-items-center" style="display: flex">
+                    <div class="col-sm-2"><p id="value-threshold"></p></div>
+                    <div class="col-sm"><div id="slider-threshold"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
     <script>
         var slider_val = 0
 
-        var margin = {top: 70, right: 150, bottom: 80, left: 50};
-        var width = 1100 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
+        var margin = {top: 20, right: 150, bottom: 50, left: 50 };
+        var width = 1000 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
 
-        var svg = d3.select("body").append("svg")
+        var svg = d3.select("div#bar_chart_container").append("svg")
             .attr("id", "bar_chart")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -157,24 +214,22 @@
                     })
             //SLIDER
             data = [2,3,4,5,6,7] 
-            var sliderStep = d3
-            .sliderBottom()
-            .min(d3.min(data))
-            .max(d3.max(data))
-            .width(300)
-            .tickFormat(d3.format(''))
-            .ticks(5)
-            .step(1)
-            .default(4)
-            .on('onchange',function(value){slider_val = value; showCalendar();});
+            var sliderStep = d3.sliderBottom()
+                            .min(d3.min(data))
+                            .max(d3.max(data))
+                            .width(300)
+                            .tickFormat(d3.format(''))
+                            .ticks(5)
+                            .step(1)
+                            .default(4)
+                            .on('onchange',function(value){slider_val = value; showCalendar(); console.log(slider_val)});
 
-            var gStep = d3
-            .select('div#slider-step')
-            .append('svg')
-            .attr('width', 500)
-            .attr('height', 100)
-            .append('g')
-            .attr('transform', 'translate(30,30)');
+            var gStep = d3.select('div#slider-step')
+                        .append('svg')
+                        .attr('width', 500)
+                        .attr('height', 60)
+                        .append('g')
+                        .attr('transform', 'translate(30,15)');
 
             gStep.call(sliderStep);
 
@@ -182,15 +237,34 @@
             //SLIDER
 
             //Calendar
-            var svg2 = d3.select("body").append("svg")
+            var margin_cal = {top: 0, right: 150, bottom: 0, left: 50};
+            var width_cal = 980 - margin_cal.left - margin_cal.right,
+            height_cal = 320 - margin_cal.top - margin_cal.bottom;
+
+
+            var svg2 = d3.select("div#calendar_container").append("svg")
                 .attr("id", "calendar")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
+                .attr("width", width_cal + margin_cal.left + margin_cal.right)
+                .attr("height", height_cal + margin_cal.top + margin_cal.bottom)
 
-            var selected_collection = ""
             var init = true
-
-            var acronyms = {"BAYC": "Bored Ape Yacht Club", "MAYC": "Mutant Ape Yacht Club", "WoW": "World of Women", "BAKC": "Bored Ape Kennel Club"}
+            
+            var selected_collection = ''
+            var selected_collection_network = ''
+            if (selected_collection == '') {
+                selected_collection_network = 'all'
+            } else if (selected_collection == 'BAYC') {
+                selected_collection_network = 'Bored Ape Yacht Club'
+            } else if (selected_collection == 'MAYC') {
+                selected_collection_network = 'Mutant Ape Yacht Club'
+            } else if (selected_collection == 'WoW') {
+                selected_collection_network = 'World of Women'
+            } else if (selected_collection == 'BAKC') {
+                selected_collection_network = 'Bored Ape Kennel Club'
+            } else {
+                selected_collection_network = selected_collection
+            }
+            updateNetwork(selected_collection_network)
 
             showCalendar()
 
@@ -221,7 +295,10 @@
                     d3.select(this).style("fill", "#27AE60").style("stroke-width","0px")
                     d3.select(this).attr("selected","false")
                     selected_collection = ""
-                    showCalendar()
+                    d3.selectAll('svg#force_diagram').remove();
+                    updateNetwork("all");
+                    showCalendar();
+                    console.log('same rect')
                     document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for all collections"
                 } else {
                     var rects = d3.selectAll("rect").style("fill", "#27AE60").style("stroke-width","0px").attr("selected","false")
@@ -231,16 +308,42 @@
                     selected_collection = d.collection
                     document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for " + selected_collection
                     showCalendar()
+
+                    if (selected_collection == '') {
+                        selected_collection_network = 'all'
+                    } else if (selected_collection == 'BAYC') {
+                        selected_collection_network = 'Bored Ape Yacht Club'
+                    } else if (selected_collection == 'MAYC') {
+                        selected_collection_network = 'Mutant Ape Yacht Club'
+                    } else if (selected_collection == 'WoW') {
+                        selected_collection_network = 'World of Women'
+                    } else if (selected_collection == 'BAKC') {
+                        selected_collection_network = 'Bored Ape Kennel Club'
+                    } else {
+                        selected_collection_network = selected_collection
+                    }
+                    d3.selectAll('svg#force_diagram').remove();
+                    updateNetwork(selected_collection_network)
                 }
             }
 
             function showCalendar() {
                 var col_data = trade_data
+
+                console.log(col_data)
+
+                console.log(selected_collection)
+
                 if (selected_collection != "") {
                     col_data = trade_data.filter(i => i.collection === selected_collection)
                 }
+
+                console.log(col_data)
+
                 col_data = col_data.filter(i => i.trades >= slider_val)
                 col_data.sort((a, b) => a.date - b.date)
+
+                // console.log(trade_data)
                 
                 d = {}
                 for (entry in col_data) {
@@ -257,7 +360,6 @@
                     date: d3.timeDay(new Date(dv.date)), 
                     value: Math.log(Number(dv.trades))
                 }))
-                //console.log(dateValues)
 
                 draw(dateValues)
             }
@@ -268,7 +370,6 @@
                     .key(d => d.date.getUTCFullYear())
                     .entries(dateValues)
                     .reverse();
-
 
                 var values = dateValues.map(c => c.value);
                 var maxValue = d3.max(values);
@@ -287,6 +388,7 @@
 
                 var group = svg2.append("g")
                     .attr("id", "calendar_items")
+                    .attr("transform", "translate(0, -20)")
 
                 var year = group
                     .selectAll("year")
@@ -350,7 +452,7 @@
                     .attr("id", "calendar_legend")
                     .attr(
                     "transform",
-                    `translate(1000, 690)`
+                    `translate(990, 590)`
                     );
 
                 var categoriesCount = 10;
@@ -366,7 +468,7 @@
                     };
                 });
 
-                var legendWidth = 40
+                var legendWidth = 30
 
                 function toggle(legend) {
                     var { lowerBound, upperBound, selected } = legend;
@@ -392,7 +494,14 @@
                     .attr("y", (d, i) => legendWidth * -i - 295)
                     .attr("width", 15)
                     .attr("height", legendWidth)
-                    .on("click", toggle);
+                    .on("click", toggle)
+                    .on('mouseover', function(d) {
+                        d3.select(this).style('stroke-width', '3px')
+                                        .style('stroke', 'black').raise();
+                    })
+                    .on('mouseout', function(d) {
+                        d3.select(this).style('stroke-width', '0');
+                    });
 
                 legend.selectAll("text")
                     .data(categories)
@@ -401,35 +510,341 @@
                     //.attr("transform", "rotate(90)")
                     .attr("y", (d, i) => -legendWidth * i - 240)
                     .attr("dy", -30)
-                    .attr("x", -70)
+                    .attr("x", -75)
                     .attr("text-anchor", "start")
                     .attr("font-size", 11)
-                    .text(d => `${d.lowerBound.toFixed(2)} - ${d.upperBound.toFixed(2)}`);
+                    .text(d => `${parseInt(Math.exp(d.lowerBound.toFixed(2)))} - ${parseInt(Math.exp(d.upperBound.toFixed(2)))}`);
 
                 legend.append("text")
+                    .attr("x", 320)
+                    .attr("y", -105)
                     .attr("dy", -5)
                     .attr("font-size", 14)
-                    .attr("text-decoration", "underline")
-                    .text("Click on category to select/deselect days");
+                    .attr("transform", "rotate(-90)")
+                    .attr("class", "diagram-text")
+                    .text("Click on category to select or deselect days");
             }
+
+
+
+            function updateNetwork(collection) {
+                d3.dsv(",", "./page_rank_files/pr_top_100_" + collection + "_edge.csv", function(d) {
+                return {
+                    source: d.source,
+                    target: d.target,
+                    value: d.value,
+                }
+                }).then(function(data1) {
+                // console.log(data1);
+                d3.dsv(",", "./page_rank_files/pr_top_100_" + collection + ".csv", function(d) {
+                    return {
+                    node_id: d.wallet_hash,
+                    page_rank: d.page_rank,
+                    }
+                }).then(function(data2) {
+                    // console.log(data2)
+                    var nodes = {};
+                    
+                    var page_rank = {}
+                    var cluster_coeff = {}
+                    
+                    // get page_rank
+                    data2.forEach(function(node) {
+                    page_rank[node.node_id] = parseFloat(node.page_rank);
+                    cluster_coeff[node.node_id] = parseFloat(node.cluster_coeff);
+                    })
+
+                    // console.log(page_rank)
+
+                    var edge_threshold = 1
+
+                    var links = data1;
+                    
+                    links.forEach(function(link) {
+                        link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+                        link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+                    });
+
+                    links = data1.filter(function(x) {
+                        return x.value > edge_threshold;
+                        });
+
+                    // console.log(links);
+
+                    function update() {
+                    let highestVal = Math.max.apply(null, Object.values(page_rank)), val = Object.keys(page_rank).find(function(a) {
+                        return page_rank[a] === highestVal;
+                    });
+
+                    // console.log(nodes);
+
+                    var edgeColor = d3.scaleLog([edge_threshold, highestVal])
+                        .range(["lightgrey", "steelblue"]);
+
+                    var width = 600,
+                        height = 800;
+
+                    d3.selectAll("force_diagram").remove();
+
+                    var svg = d3.select("div#network_container").append("svg")
+                        .attr("id", "force_diagram")
+                        .attr("width", width)
+                        .attr("height", height);
+
+                    var force = d3.forceSimulation()
+                        .nodes(d3.values(nodes))
+                        .force("link", d3.forceLink(links).distance(50))
+                        .force('center', d3.forceCenter(width / 2, height / 2))
+                        .force("x", d3.forceX())
+                        .force("y", d3.forceY())
+                        .force("charge", d3.forceManyBody().strength(-100))
+                        .alphaTarget(0.2)
+                        .on("tick", tick);
+
+                    // add the links
+                    var edge = svg.selectAll(".edge")
+                        .data(links).enter()
+                        .append("g")
+                        .attr("class", "edge");
+                        
+                    var path = edge.append("path")
+                        .attr("class", function(d) { return "link " + d.type; })
+                        .style("stroke", function(d) {
+                            return edgeColor(d.value)
+                        })
+                        .style("stroke-width", function(d) {
+                            strokeWidth = d3.scaleLog([0, highestVal]).range([1, 3]);
+                            return "" + strokeWidth(d.value) + "px";
+                        });
+                    
+                    // console.log(path)
+
+                    // define the nodes
+                    var node = svg.selectAll(".node")
+                        .data(force.nodes())
+                        .enter().append("g")
+                        .attr("class", "node")
+                        .on("dblclick", function(d){
+                            // console.log("double clicked!");
+                            d.fx = null;
+                            d.fy = null;
+                            d3.select(this).select("circle").style("fill", function(d) {
+                            d.weight = page_rank[d.name]
+                            return mycolor(d.weight / highestVal);
+                            })
+                            d3.select(this).selectAll('#tooltip—drag').remove();
+                        })
+                        .call(d3.drag()
+                            .on("start", dragstarted)
+                            .on("drag", dragged)
+                            .on("end", dragended));
+
+                    var mycolor = d3.scaleLinear()
+                        .domain([0, 1])
+                        .range(["lightblue", "steelblue"]);
+
+                    // add the nodes
+                    var circle = svg.selectAll(".node")
+                        .append("circle")
+                        .attr('class', 'circle')
+                        .attr("id", function(d){
+                            return (d.name.replace(/\s+/g,'').toLowerCase());
+                        })
+                        .attr("r", function(d) {      
+                            d.weight = page_rank[d.name] 
+                            var minRadius = 2;
+                            return minRadius + (d.weight / highestVal) * 20;
+                        })
+                        .style("fill", function(d) {
+                            // d.weight = links.filter(function(l) {
+                            //   return l.source.index == d.index || l.target.index == d.index
+                            // }).length;    
+                            d.weight = page_rank[d.name]
+                            return mycolor(d.weight / highestVal);
+                        })
+                        .on('mouseover', function (d, i) {
+                            d3.select(this).transition()
+                                .duration('50')
+                                .style('stroke', 'yellow')
+                                .style('stroke-width', '3px');
+                            })
+                        .on('mouseout', function (d, i) {
+                            d3.select(this).transition()
+                                .duration('50')
+                                .style('stroke', 'black')
+                                .style('stroke-width', '1.5px');})
+
+                    let tooltipx = 0;
+                    let tooltipy = 0;
+                    let tooltipColor = 'white';
+
+                    node.on('mouseover', function (d) {
+                        let tooltip = d3.select(this).append('g');
+                        tooltip.append('rect')
+                            .attr('id', 'tooltip')
+                            .attr("rx", 6)
+                            .attr("ry", 6)
+                            .attr('x', -160 + tooltipx)
+                            .attr('y', -80 + tooltipy)
+                            .attr('width', 320)
+                            .attr('height', 48)
+                            .attr('fill', '#69a3b2');
+                        tooltip.append('text')
+                            .attr('id', 'tooltip')
+                            .attr('class', 'diagram-text')
+                            .attr("x", -150 + tooltipx)
+                            .attr("y", -60 + tooltipy)
+                            .style("font-weight", 800)  
+                            .style("fill", tooltipColor)
+                            .text(function(d) {
+                            return "Wallet Hash: " + d.name;
+                            });
+                        tooltip.append('text')
+                            .attr('id', 'tooltip')
+                            .attr('class', 'diagram-text')
+                            .attr("x", -150 + tooltipx)
+                            .attr("y", -45 + tooltipy)
+                            .style("font-weight", 800)  
+                            .style("fill", tooltipColor)
+                            .text(function(d) {
+                            return "Page rank: " + page_rank[d.name];
+                            });
+                        d3.select(this).raise();
+                        // d3.select(this).append('text')
+                        //     .attr('id', 'tooltip')
+                        //     .attr("x", -150 + tooltipx)
+                        //     .attr("y", -45 + tooltipy)
+                        //     .style("font-weight", 800)  
+                        //     .style("fill", tooltipColor)
+                        //     .text(function(d) {
+                        //     return "Clustering coefficient: " + page_rank[d.name];
+                        //     });
+                    })
+                    .on('mouseout', function(d) {
+                        d3.selectAll('#tooltip').remove();
+                    })
+                    
+                    // add the curvy lines
+                    function tick() {
+                        path.attr("d", function(d) {
+                            var dx = d.target.x - d.source.x,
+                                dy = d.target.y - d.source.y,
+                                dr = 0
+                            return "M" +
+                                d.source.x + "," +
+                                d.source.y + "A" +
+                                dr + "," + dr + " 0 0,1 " +
+                                d.target.x + "," +
+                                d.target.y;
+                        });
+
+                        node.attr("transform", function(d) {
+                            return "translate(" + d.x + "," + d.y + ")"; 
+                        });
+                    };
+
+                    function dragstarted(d) {
+                        if (!d3.event.active) force.alphaTarget(0.3).restart();
+                        d.fx = d.x;
+                        d.fy = d.y;
+                        d3.select(this).select("circle").style("fill", "yellow");
+                    };
+
+                    function dragged(d) {
+                        d.fx = d3.event.x;
+                        d.fy = d3.event.y;
+                        if (d3.select(this).select('#hash_click').empty()) {
+                            let tooltip = d3.select(this).append('g');
+                            tooltip.append('rect')
+                                .attr('id', 'tooltip—drag')
+                                .attr("rx", 6)
+                                .attr("ry", 6)
+                                .attr('x', -160 + tooltipx)
+                                .attr('y', -80 + tooltipy)
+                                .attr('width', 320)
+                                .attr('height', 48)
+                                .attr('fill', '#69a3b2');
+                            tooltip.append('text')
+                                .attr('id', 'tooltip—drag')
+                                .attr('class', 'diagram-text')
+                                .attr("x", -150 + tooltipx)
+                                .attr("y", -60 + tooltipy)
+                                .style("font-weight", 800)  
+                                .style("fill", tooltipColor)
+                                .text(function(d) {
+                                return "Wallet Hash: " + d.name;
+                                });
+                            tooltip.append('text')
+                                .attr('id', 'tooltip—drag')
+                                .attr('class', 'diagram-text')
+                                .attr("x", -150 + tooltipx)
+                                .attr("y", -45 + tooltipy)
+                                .style("font-weight", 800)  
+                                .style("fill", tooltipColor)
+                                .text(function(d) {
+                                return "Page rank: " + page_rank[d.name];
+                                });
+                        }
+                    };
+
+                    function dragended(d) {
+                        if (!d3.event.active) force.alphaTarget(0);
+                        d.fixed = true;
+                        
+                        d.fx = d3.event.x;
+                        d.fy = d3.event.y;
+                    };
+                    }
+
+                    update();
+
+                    d3.selectAll('.svg-force-slider').remove()
+
+                    var sliderThreshold = d3
+                    .sliderBottom()
+                    .min(1)
+                    .max(20)
+                    .step(1)
+                    .width(300)
+                    .tickValues([1, 2, 3, 4, 5, 10, 15, 20])
+                    .default(3)
+                    .on('onchange', val => {
+                        // console.log(val);
+                        edge_threshold = val;
+                        links = data1.filter(function(x) {
+                        return x.value >= edge_threshold;
+                        });
+                        d3.select('#force_diagram').remove();
+                        update();
+
+                    });
+
+                    var gThreshold = d3
+                    .select('div#slider-threshold')
+                    .append('svg')
+                    .attr('class', 'svg-force-slider')
+                    .attr('width', 380)
+                    .attr('height', 60)
+                    .append('g')
+                    .attr('transform', 'translate(30,15)');
+
+                    gThreshold.call(sliderThreshold);
+
+                }).catch(function(error) {
+                    console.log(error);
+                });
+                }).catch(function(error) {
+                console.log(error);
+                });
+
+            }
+
         }).catch(function(error) {
             console.log(error);
         });
 
 
     </script>
-    <div>
-        <div style="width: 25%; float:left">
-            <h2>NFT Fraud Calendar Heatmap</h2>
-            <h4 id ="calendarHeader">Daily number of fraudulent tokens for all collections</h4>
-        </div>
-            
-        <div style="width: 75%; float:right">
-            <h4>Daily number of transactions per token threshold</h4>
-            <div class="row align-items-center">
-            <div class="col-sm"><div id="slider-step"></div></div>
-            </div>
-        </div>
-    </div>
+    
 </body>
 </html>
