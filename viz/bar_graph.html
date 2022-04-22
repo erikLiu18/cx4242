@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
     <style>
         body {
             /* vertical-align: middle; */
@@ -13,7 +16,7 @@
             justify-content:center;
             align-items: flex-start;
             min-height:100vh;
-            background-color: rgb(255, 255, 255);
+            background-color: white;
         }
         path.link {
             fill: none;
@@ -36,16 +39,16 @@
 
         h1, h2, h3, h4, p {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Roboto', sans-serif;
         }
 
         .diagram-text {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Roboto', sans-serif;
             font-size: 10px;
         }
     </style>
     <meta charset="utf-8">
-    <title>Abnormality detection in NFT Marketplace</title>
+    <title>Abnormality Detection in NFT Marketplace</title>
 </head>
 
 
@@ -58,36 +61,38 @@
     <script src="https://unpkg.com/d3-simple-slider"></script>
     <script type="text/javascript" src="./lib/d3.v5.min.js"></script>
     <div style="display: flex; flex-direction: column; padding-top: 2vh; max-width: 95%;">
-        <div>
-            <h1>Abnormality detection in NFT Marketplace</h1>
-            <p>In this project, we aim to identify suspicious tokens and users present in a subset of the NFT network</p>
-        </div>
-        <br>
         <div style="display: flex;">
-            <div style="display: flex; flex-direction: column;">
-                <div id="bar_chart_container">
-                    <h2>Top 14 NFT Collections by Trading Volume</h2>
+            <div style="display: flex; flex-direction: column;"> 
+                <div style="display: flex; align-items: center;">
+                    <h1>Abnormality Detection in NFT Marketplace</h1>
+                    <p style="line-height: 25px; max-width: 620px; padding-right: 30px;">
+                        This interface is designed for interactive abnormal behavior detection in the NFT market. You can gain insights about the most suspicious NFT collections/tokens and identify most influential users in order to trade safely.
+                    </p>
                 </div>
-                <div id="calendar_container" style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <div style="display: flex;">
-                        <h2>NFT Fraud Calendar Heatmap</h2>
-                        <div style="display: inline-block; width: 100px"></div>
-                        <h4 id ="calendarHeader">Daily number of fraudulent tokens for all collections</h4>
-                    </div>
-                    <div style="display: flex;">
-                        <h4>Daily number of transactions per token threshold</h4>
-                        <div style="display: inline-block; width: 80px"></div>
-                        <div class="row align-items-center">
-                        <div class="col-sm"><div id="slider-step"></div></div>
+                <div id="bar_chart_container" style="display: flex; flex-direction: column;">
+                    <!-- <h2>Top 14 NFT Collections by Trading Volume</h2> -->
+                </div>
+                <div id="calendar_container" style="display: flex; flex-direction: column; padding-top: 15px;">
+                    <div style="display: flex; align-items: center;">
+                        <h2 id ="calendarHeader" style="padding-left: 30px; padding-bottom: 25px; padding-right: 20px;">Wash Trading Activity Calendar for All Collections</h2>
+                        <div style="display: flex; flex-direction: column;">
+                            <p style="padding-left: 20px; font-size: 12px;">Threshold for overactive tokens: </p>
+                            <div class="row align-items-center">
+                            <div class="col-sm"><div id="slider-step"></div></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="network_container" style="display: flex; flex-direction: column;">
-                <h2>Network Diagram</h2>
-                <div class="row align-items-center" style="display: flex">
-                    <div class="col-sm-2"><p id="value-threshold"></p></div>
-                    <div class="col-sm"><div id="slider-threshold"></div></div>
+            <div>
+                <div id="network_container" style="display: flex; flex-direction: column; padding-top: 20px; background-color: white; border-radius: 5px; border-style: solid; border-width: 1px; border-color:grey">
+                    <div style="display: flex; align-items: center; padding-left: 10px;">
+                        <h2 id="networkHeader" style="padding-left: 10px; padding-right: 0px; padding-bottom: 25px;">Interaction between Influential Users in All Collections</h2>
+                        <div class="row align-items-center" style="display: flex; flex-direction: column;">
+                            <p style="padding-left: 20px; font-size: 12px;">Only show edges with num of transactions larger than: </p>
+                            <div class="col-sm"><div id="slider-threshold"></div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -160,6 +165,8 @@
                     .attr("text-anchor", "middle")
                     .attr("x", width/2)
                     .attr("y", 40)
+                    .style('font-size', 15)
+                    .attr('class', 'diagram-text')
                     .text("Collection")
 
             var y_axis = container.append("g")
@@ -172,7 +179,9 @@
                     .attr("x", -180)
                     .attr("y", -height/9)
                     .attr("transform", "rotate(-90)")
-                    .text("Fraud Index")
+                    .style('font-size', 15)
+                    .attr('class', 'diagram-text')
+                    .text("Abnormality Index")
 
             var bars = container.append("g")
                 .attr("id", "bars")
@@ -233,7 +242,7 @@
 
             var gStep = d3.select('div#slider-step')
                         .append('svg')
-                        .attr('width', 500)
+                        .attr('width', 360)
                         .attr('height', 60)
                         .append('g')
                         .attr('transform', 'translate(30,15)');
@@ -246,13 +255,14 @@
             //Calendar
             var margin_cal = {top: 0, right: 150, bottom: 0, left: 50};
             var width_cal = 980 - margin_cal.left - margin_cal.right,
-            height_cal = 320 - margin_cal.top - margin_cal.bottom;
+            height_cal = 330 - margin_cal.top - margin_cal.bottom;
 
 
             var svg2 = d3.select("div#calendar_container").append("svg")
                 .attr("id", "calendar")
                 .attr("width", width_cal + margin_cal.left + margin_cal.right)
                 .attr("height", height_cal + margin_cal.top + margin_cal.bottom)
+
 
             var init = true
             
@@ -305,8 +315,9 @@
                     d3.selectAll('svg#force_diagram').remove();
                     updateNetwork("all");
                     showCalendar();
-                    //console.log('same rect')
-                    document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for all collections"
+                    console.log('same rect')
+                    document.getElementById("calendarHeader").innerText = "Wash Trading Activity Calendar for All Collections"
+                    document.getElementById("networkHeader").innerText = "Interaction between Influential Users in All Collections"
                 } else {
                     var rects = d3.selectAll("rect").style("fill", bar_color).style("stroke-width","0px").attr("selected","false")
                     d3.select(this)
@@ -314,7 +325,9 @@
                         .style("stroke-width","2px");
                     d3.select(this).attr("selected","true")
                     selected_collection = d.collection
-                    document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for " + selected_collection
+                    document.getElementById("calendarHeader").innerText = "Wash Trading Activity Calendar for " + selected_collection
+                    document.getElementById("networkHeader").innerText = "Interaction between Influential Users in " + selected_collection
+
                     showCalendar()
 
                     if (selected_collection == '') {
@@ -405,15 +418,16 @@
                     .data(years)
                     .enter()
                     .append("g")
-                    .attr("transform", (d, i) => `translate(50, ${yearHeight * i + cellSize * 1.5})`)
+                    .attr("transform", (d, i) => `translate(50, ${(yearHeight + 5) * i + cellSize * 1.5})`)
                     .attr("class", "year")
 
                 year.append("text")
                     .attr("x", -5)
                     .attr("y", -30)
                     .attr("text-anchor", "end")
-                    .attr("font-size", 16)
-                    .attr("font-weight", 550)
+                    .attr("class", "diagram-text")
+                    .style("font-size", 16)
+                    .style("font-weight", 800)
                     .attr("transform", "rotate(270)")
                     .text(d => d.key)
                     .attr("class", "diagram-text")
@@ -438,9 +452,10 @@
                     .attr("x", -5)
                     .attr("y", d => (countDay(d) + 0.5) * cellSize)
                     .attr("dy", "0.31em")
-                    .attr("font-size", 12)
-                    .text(formatDay)
-                    .attr("class", "diagram-text");
+                    .style("font-size", 10.5)
+                    .style("font-weight", 400)
+                    .attr("class", "diagram-text")
+                    .text(formatDay);
 
                 year.append("g")
                     .selectAll("rect")
@@ -449,10 +464,9 @@
                     .append("rect")
                     .attr("width", cellSize - 1.5)
                     .attr("height", cellSize - 1.5)
-                    .attr(
-                    "x",
-                    (d, i) => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 10
-                    )
+                    .attr("rx", 2)
+                    .attr("ry", 2)
+                    .attr("x", (d, i) => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 10)
                     .attr("y", d => countDay(d.date) * cellSize + 0.5)
                     .attr("fill", d => colorFn(d.value))
                     .append("title")
@@ -594,8 +608,8 @@
                     var edgeColor = d3.scaleLog([edge_threshold, highestVal])
                         .range(["lightgrey", "steelblue"]);
 
-                    var width = 600,
-                        height = 800;
+                    width = 600;
+                    height = 600;
 
                     d3.selectAll("force_diagram").remove();
 
@@ -836,7 +850,7 @@
                     .select('div#slider-threshold')
                     .append('svg')
                     .attr('class', 'svg-force-slider')
-                    .attr('width', 380)
+                    .attr('width', 360)
                     .attr('height', 60)
                     .append('g')
                     .attr('transform', 'translate(30,15)');
