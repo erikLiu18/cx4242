@@ -58,6 +58,8 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.2.1/d3-color.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-path@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-shape@3"></script>
     <script src="https://unpkg.com/d3-simple-slider"></script>
     <script type="text/javascript" src="./lib/d3.v5.min.js"></script>
     <div style="display: flex; flex-direction: column; padding-top: 2vh; max-width: 95%;">
@@ -66,15 +68,16 @@
                 <div style="display: flex; align-items: center;">
                     <h1>Abnormality Detection in NFT Marketplace</h1>
                     <p style="line-height: 25px; max-width: 620px; padding-right: 30px;">
-                        This interface is designed for interactive abnormal behavior detection in the NFT market. You can gain insights about the most suspicious NFT collections/tokens and identify most influential users in order to trade safely.
+                        This interface is designed for interactive abnormal behavior detection in NFT market. You can gain insights about the most suspicious NFT collections/tokens and identify most influential users in order to evaluate market risk and trade safely.
                     </p>
                 </div>
                 <div id="bar_chart_container" style="display: flex; flex-direction: column;">
-                    <!-- <h2>Top 14 NFT Collections by Trading Volume</h2> -->
                 </div>
                 <div id="calendar_container" style="display: flex; flex-direction: column; padding-top: 15px;">
                     <div style="display: flex; align-items: center;">
-                        <h2 id ="calendarHeader" style="padding-left: 30px; padding-bottom: 25px; padding-right: 20px;">Wash Trading Activity Calendar for All Collections</h2>
+                        <div id="calendar_header_container" style="display: flex; flex-direction: column;">
+                            <h2 id ="calendarHeader" style="padding-left: 30px; padding-right: 20px;">Wash Trading Activity Calendar for All Collections</h2>
+                        </div>
                         <div style="display: flex; flex-direction: column;">
                             <p style="padding-left: 20px; font-size: 12px;">Threshold for overactive tokens: </p>
                             <div class="row align-items-center">
@@ -87,7 +90,7 @@
             <div>
                 <div id="network_container" style="display: flex; flex-direction: column; padding-top: 20px; background-color: white; border-radius: 5px; border-style: solid; border-width: 1px; border-color:grey">
                     <div style="display: flex; align-items: center; padding-left: 10px;">
-                        <h2 id="networkHeader" style="padding-left: 10px; padding-right: 0px; padding-bottom: 25px;">Interaction between Influential Users in All Collections</h2>
+                        <h2 id="networkHeader" style="padding-left: 10px; padding-right: 0px; padding-bottom: 25px;">Interaction Between Influential Users <br> in All Collections</h2>
                         <div class="row align-items-center" style="display: flex; flex-direction: column;">
                             <p style="padding-left: 20px; font-size: 12px;">Only show edges with num of transactions larger than: </p>
                             <div class="col-sm"><div id="slider-threshold"></div></div>
@@ -192,10 +195,13 @@
                 .style("background", "white")
                 .style("white-space", "nowrap")
                 .attr("class", "tooltip")
+                .attr("class", "diagram-text")
                 .style("opacity", 0)
+                .style("padding", "8px")
                 .style("border-style","solid")
                 .style("border-width", "1px")
                 .style("border-radius", "9px")
+                .style("font-size", "16px")
 
             var bar_color = '#67a9cf'
             var bar_color_hover = '#a6bddb'
@@ -211,8 +217,6 @@
                     .attr("height", function(d) {return height - scaleY(d.fraud_index)})
                     .attr("fill", bar_color)
                     .attr("selected","false")
-
-                    
                     //Interactivity
                     .on('click', clicked)
                     .on('mouseover', mousedover)
@@ -228,6 +232,7 @@
                             .duration(100)
                             .style("opacity", 0)
                     })
+
             //SLIDER
             data = [2,3,4,5,6,7] 
             var sliderStep = d3.sliderBottom()
@@ -237,7 +242,7 @@
                             .tickFormat(d3.format(''))
                             .ticks(5)
                             .step(1)
-                            .default(4)
+                            .default(2)
                             .on('onchange',function(value){slider_val = value; showCalendar();});
 
             var gStep = d3.select('div#slider-step')
@@ -317,7 +322,7 @@
                     showCalendar();
                     console.log('same rect')
                     document.getElementById("calendarHeader").innerText = "Wash Trading Activity Calendar for All Collections"
-                    document.getElementById("networkHeader").innerText = "Interaction between Influential Users in All Collections"
+                    document.getElementById("networkHeader").innerText = "Interaction Between Influential Users \n in All Collections"
                 } else {
                     var rects = d3.selectAll("rect").style("fill", bar_color).style("stroke-width","0px").attr("selected","false")
                     d3.select(this)
@@ -326,7 +331,7 @@
                     d3.select(this).attr("selected","true")
                     selected_collection = d.collection
                     document.getElementById("calendarHeader").innerText = "Wash Trading Activity Calendar for " + selected_collection
-                    document.getElementById("networkHeader").innerText = "Interaction between Influential Users in " + selected_collection
+                    document.getElementById("networkHeader").innerText = "Interaction Between Influential Users \n in " + selected_collection
 
                     showCalendar()
 
@@ -408,6 +413,49 @@
                     d3.select("#calendar_items").remove()
                 }
                 init = false
+
+                d3.select("#looksrare").remove();
+
+                // Looksrare marker
+                var looksrare = d3.select("#calendar_header_container").append("svg")
+                                .attr("id", "looksrare")
+                                .attr("width", 300)
+                                .attr("height", 50)
+
+                var sym = d3.symbol().type(d3.symbolTriangle).size(60);
+
+                looksrare.append("path")
+                    .attr("d", sym)
+                    .attr("fill", "black")
+                    .attr("transform", "translate(97, 43)rotate(180)");
+
+                looksrare.append("text")
+                    .attr("transform", "translate(45, 35)")
+                    .attr("class", "diagram-text")
+                    .style("font-size", 12)
+                    .text("LooksRare Launches")
+
+                // Calendar instruction
+                d3.select("#cal-instr").remove();
+                var cal_instr = svg2.append("g").attr("transform", "translate(370, 30)").attr("id", "cal-instr")
+                cal_instr.append("text")
+                    .attr("class", "diagram-text")
+                    .style("font-size", 14)
+                    .style("font-style", "italic")
+                    .text("The launch of LooksRare, an NFT marketplace that awards users ")
+                cal_instr.append("text")
+                    .attr("class", "diagram-text")
+                    .attr("y", 20)
+                    .style("font-size", 14)
+                    .style("font-style", "italic")
+                    .text("for trading in large volumes,  led to significant increase in wash trading")
+                cal_instr.append("text")
+                    .attr("class", "diagram-text")
+                    .attr("y", 40)
+                    .style("font-size", 14)
+                    .style("font-style", "italic")
+                    .text("activity since January 2020. Toggle the slider to see more.")
+
 
                 var group = svg2.append("g")
                     .attr("id", "calendar_items")
@@ -564,12 +612,14 @@
                 }).then(function(data1) {
                 // console.log(data1);
                 d3.dsv(",", "./page_rank_files/pr_top_100_" + collection + ".csv", function(d) {
+                    console.log(d)
                     return {
-                    node_id: d.wallet_hash,
-                    page_rank: d.page_rank,
+                        node_id: d.wallet_hash,
+                        page_rank: parseFloat(d.page_rank),
+                        cluster_coeff: parseFloat(d.weighted_cluster_coeff),
                     }
                 }).then(function(data2) {
-                    // console.log(data2)
+                    console.log(data2)
                     var nodes = {};
                     
                     var page_rank = {}
@@ -577,8 +627,8 @@
                     
                     // get page_rank
                     data2.forEach(function(node) {
-                    page_rank[node.node_id] = parseFloat(node.page_rank);
-                    cluster_coeff[node.node_id] = parseFloat(node.cluster_coeff);
+                        page_rank[node.node_id] = node.page_rank;
+                        cluster_coeff[node.node_id] = parseFloat(node.cluster_coeff);
                     })
 
                     // console.log(page_rank)
@@ -737,15 +787,15 @@
                             return "Page rank: " + page_rank[d.name];
                             });
                         d3.select(this).raise();
-                        // d3.select(this).append('text')
-                        //     .attr('id', 'tooltip')
-                        //     .attr("x", -150 + tooltipx)
-                        //     .attr("y", -45 + tooltipy)
-                        //     .style("font-weight", 800)  
-                        //     .style("fill", tooltipColor)
-                        //     .text(function(d) {
-                        //     return "Clustering coefficient: " + page_rank[d.name];
-                        //     });
+                        d3.select(this).append('text')
+                            .attr('id', 'tooltip')
+                            .attr("x", -150 + tooltipx)
+                            .attr("y", -45 + tooltipy)
+                            .style("font-weight", 800)  
+                            .style("fill", tooltipColor)
+                            .text(function(d) {
+                            return "Clustering coefficient: " + cluster_coeff[d.name];
+                            });
                     })
                     .on('mouseout', function(d) {
                         d3.selectAll('#tooltip').remove();
