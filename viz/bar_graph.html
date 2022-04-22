@@ -185,6 +185,10 @@
                 .style("border-width", "1px")
                 .style("border-radius", "9px")
 
+            var bar_color = '#67a9cf'
+            var bar_color_hover = '#a6bddb'
+            var bar_color_click = '#3690c0'
+
             bars.selectAll("rect")
                 .data(data)
                 .enter()
@@ -193,7 +197,7 @@
                     .attr("y", function(d) {return scaleY(d.fraud_index)})
                     .attr("width", scaleX.bandwidth)
                     .attr("height", function(d) {return height - scaleY(d.fraud_index)})
-                    .attr("fill", "#27AE60")
+                    .attr("fill", bar_color)
                     .attr("selected","false")
 
                     
@@ -203,10 +207,10 @@
                     .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY - 200)+"px").style("left",(d3.event.pageX - 70)+"px");})
                     .on('mouseout', function (d) {
                         if(d3.select(this).attr("selected") == "false"){
-                            d3.select(this).style("fill", "#27AE60")
+                            d3.select(this).style("fill", bar_color)
                         }
                         else{
-                            d3.select(this).style("fill", "#186A3B")
+                            d3.select(this).style("fill", bar_color_click)
                         }
                         tooltip.transition()
                             .duration(100)
@@ -269,7 +273,7 @@
             showCalendar()
 
             function mousedover(d) {
-                d3.select(this).style("fill", "#7DCEA0")
+                d3.select(this).style("fill", bar_color_hover)
                 var w_tokens = tooltip_data.filter(i => i.collection === d.collection)
                 w_tokens = w_tokens.slice(0,5)
                 
@@ -292,7 +296,7 @@
 
             function clicked(d) {
                 if (d3.select(this).attr("selected") == "true") {
-                    d3.select(this).style("fill", "#27AE60").style("stroke-width","0px")
+                    d3.select(this).style("fill", bar_color).style("stroke-width","0px")
                     d3.select(this).attr("selected","false")
                     selected_collection = ""
                     d3.selectAll('svg#force_diagram').remove();
@@ -301,9 +305,10 @@
                     console.log('same rect')
                     document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for all collections"
                 } else {
-                    var rects = d3.selectAll("rect").style("fill", "#27AE60").style("stroke-width","0px").attr("selected","false")
+                    var rects = d3.selectAll("rect").style("fill", bar_color).style("stroke-width","0px").attr("selected","false")
                     d3.select(this)
-                        .style("fill", "#186A3B").style("stroke","black").style("stroke-width","2px")
+                        .style("fill", bar_color_click).style("stroke","black")
+                        .style("stroke-width","2px");
                     d3.select(this).attr("selected","true")
                     selected_collection = d.collection
                     document.getElementById("calendarHeader").innerText = "Daily number of fraudulent tokens for " + selected_collection
