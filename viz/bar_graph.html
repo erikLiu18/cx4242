@@ -87,7 +87,12 @@
                     </div>
                 </div>
             </div>
-            <div>
+            <div style="display: flex; flex-direction: column;">
+                <div style="display: flex; flex-direction: column; padding-right: 5px; padding-bottom: 15px; align-items: flex-end;">
+                    <p style="padding: 4px; padding-top: 0;">CX4242 Spring 2022 Team 32</p>     
+                    <p style="padding: 4px;">Philip Kang, Andrew Li, Jason Marfey, Eric Qiu,</p>
+                    <p style="padding: 4px;">Yunsong Liu and Mingxiao Song</p>     
+                </div>
                 <div id="network_container" style="display: flex; flex-direction: column; padding-top: 20px; background-color: white; border-radius: 5px; border-style: solid; border-width: 1px; border-color:grey">
                     <div style="display: flex; align-items: center; padding-left: 10px;">
                         <h2 id="networkHeader" style="padding-left: 10px; padding-right: 0px; padding-bottom: 25px;">Interaction Between Influential Users <br> in All Collections</h2>
@@ -659,7 +664,7 @@
                         .range(["lightgrey", "steelblue"]);
 
                     width = 600;
-                    height = 600;
+                    height = 680;
 
                     d3.selectAll("force_diagram").remove();
 
@@ -764,7 +769,7 @@
                             .attr('x', -160 + tooltipx)
                             .attr('y', -80 + tooltipy)
                             .attr('width', 320)
-                            .attr('height', 48)
+                            .attr('height', 60)
                             .attr('fill', '#69a3b2');
                         tooltip.append('text')
                             .attr('id', 'tooltip')
@@ -786,16 +791,18 @@
                             .text(function(d) {
                             return "Page rank: " + page_rank[d.name];
                             });
-                        d3.select(this).raise();
-                        d3.select(this).append('text')
+                        tooltip.append('text')
                             .attr('id', 'tooltip')
+                            .attr('class', 'diagram-text')
                             .attr("x", -150 + tooltipx)
-                            .attr("y", -45 + tooltipy)
+                            .attr("y", -30 + tooltipy)
                             .style("font-weight", 800)  
                             .style("fill", tooltipColor)
                             .text(function(d) {
                             return "Clustering coefficient: " + cluster_coeff[d.name];
                             });
+                        d3.select(this).raise();
+                        
                     })
                     .on('mouseout', function(d) {
                         d3.selectAll('#tooltip').remove();
@@ -839,7 +846,7 @@
                                 .attr('x', -160 + tooltipx)
                                 .attr('y', -80 + tooltipy)
                                 .attr('width', 320)
-                                .attr('height', 48)
+                                .attr('height', 60)
                                 .attr('fill', '#69a3b2');
                             tooltip.append('text')
                                 .attr('id', 'tooltip—drag')
@@ -860,6 +867,16 @@
                                 .style("fill", tooltipColor)
                                 .text(function(d) {
                                 return "Page rank: " + page_rank[d.name];
+                                });
+                            tooltip.append('text')
+                                .attr('id', 'tooltip')
+                                .attr('class', 'diagram-text')
+                                .attr("x", -150 + tooltipx)
+                                .attr("y", -30 + tooltipy)
+                                .style("font-weight", 800)  
+                                .style("fill", tooltipColor)
+                                .text(function(d) {
+                                return "Clustering coefficient: " + cluster_coeff[d.name];
                                 });
                         }
                     };
