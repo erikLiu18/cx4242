@@ -71,7 +71,7 @@
                         This interface is designed for interactive abnormal behavior detection in NFT market. You can gain insights about the most suspicious NFT collections/tokens and identify most influential users in order to evaluate market risk and trade safely.
                     </p>
                 </div>
-                <div id="bar_chart_container" style="display: flex; flex-direction: column;">
+                <div id="bar_chart_container" style="display: flex; flex-direction: column; padding-top: 10px;">
                 </div>
                 <div id="calendar_container" style="display: flex; flex-direction: column; padding-top: 15px;">
                     <div style="display: flex; align-items: center;">
@@ -89,9 +89,9 @@
             </div>
             <div style="display: flex; flex-direction: column;">
                 <div style="display: flex; flex-direction: column; padding-right: 5px; padding-bottom: 15px; align-items: flex-end;">
-                    <p style="padding: 4px; padding-top: 0;">CX4242 Spring 2022 Team 32</p>     
-                    <p style="padding: 4px;">Philip Kang, Andrew Li, Jason Marfey, Eric Qiu,</p>
-                    <p style="padding: 4px;">Yunsong Liu and Mingxiao Song</p>     
+                    <p style="padding: 4px; padding-top: 0; font-style:italic;">CX4242 Spring 2022 Team 32</p>     
+                    <p style="padding: 4px; font-style:italic;">Philip Kang, Andrew Li, Jason Marfey, Eric Qiu,</p>
+                    <p style="padding: 4px; font-style:italic;">Yunsong Liu and Mingxiao Song</p>     
                 </div>
                 <div id="network_container" style="display: flex; flex-direction: column; padding-top: 20px; background-color: white; border-radius: 5px; border-style: solid; border-width: 1px; border-color:grey">
                     <div style="display: flex; align-items: center; padding-left: 10px;">
@@ -122,6 +122,7 @@
             .attr("id", "container")
             .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+
 
         var parseTime = d3.timeParse("%-m/%-d/%y")
 
@@ -238,6 +239,40 @@
                             .style("opacity", 0)
                     })
 
+            var instruction = container.append("g")
+                .attr("id", "instruction")
+                .attr("transform", "translate(330, 80)")
+
+            instruction.append("rect")
+                .attr("width", 300)
+                .attr("height", 100)
+                .style("fill", bar_color)
+                .style("opacity", 0.2)
+
+            instruction.append("text")
+                .attr("class", "diagram-text")
+                .attr("x", 25)
+                .attr("y", 35)
+                .style("font-size", 14)
+                .style("font-style", "italic")
+                .text("Click on a collection to view its own")
+
+            instruction.append("text")
+                .attr("class", "diagram-text")
+                .attr("x", 25)
+                .attr("y", 55)
+                .style("font-size", 14)
+                .style("font-style", "italic")
+                .text("wash trading activity. Click again to")
+
+            instruction.append("text")
+                .attr("class", "diagram-text")
+                .attr("x", 25)
+                .attr("y", 75)
+                .style("font-size", 14)
+                .style("font-style", "italic")
+                .text("view all collections again.")
+
             //SLIDER
             data = [2,3,4,5,6,7] 
             var sliderStep = d3.sliderBottom()
@@ -311,7 +346,7 @@
                 tooltip.transition()
                     .duration(100)
                     .style("opacity", 0.9)
-                tooltip.html("Collection Name: " + d.collection + "<br/>5 Tokens with Highest Fraud Index: " + tooltip_text)
+                tooltip.html("Collection Name: " + d.collection + "<br/>5 Tokens with Highest Abnormality Index: " + tooltip_text)
                     .style("left", (d3.event.pageX + 1000) + "px")		
                     .style("top", d3.event.pageY - 125 + "px")
             }
@@ -664,7 +699,7 @@
                         .range(["lightgrey", "steelblue"]);
 
                     width = 600;
-                    height = 680;
+                    height = 690;
 
                     d3.selectAll("force_diagram").remove();
 
