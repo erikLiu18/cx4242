@@ -209,9 +209,9 @@
                 .style("border-radius", "9px")
                 .style("font-size", "16px")
 
-            var bar_color = '#67a9cf'
-            var bar_color_hover = '#a6bddb'
-            var bar_color_click = '#3690c0'
+            var bar_color = '#6a51a3'
+            var bar_color_hover = '#807dba'
+            var bar_color_click = '#3f007d'
 
             bars.selectAll("rect")
                 .data(data)
@@ -707,6 +707,12 @@
                         .attr("id", "force_diagram")
                         .attr("width", width)
                         .attr("height", height);
+                    
+                    svg.append("text")
+                        .attr("class", "diagram-text")
+                        .attr("x", 400)
+                        .attr("y", 680)
+                        .text("* Users are selected based on their page ranks")
 
                     var force = d3.forceSimulation()
                         .nodes(d3.values(nodes))
@@ -747,7 +753,8 @@
                             d.fy = null;
                             d3.select(this).select("circle").style("fill", function(d) {
                             d.weight = page_rank[d.name]
-                            return mycolor(d.weight / highestVal);
+                            return "#7bccc4"
+                            // return mycolor(d.weight / highestVal);
                             })
                             d3.select(this).selectAll('#tooltip—drag').remove();
                         })
@@ -777,7 +784,8 @@
                             //   return l.source.index == d.index || l.target.index == d.index
                             // }).length;    
                             d.weight = page_rank[d.name]
-                            return mycolor(d.weight / highestVal);
+                            return "#7bccc4";
+                            // return mycolor(d.weight / highestVal);
                         })
                         .on('mouseover', function (d, i) {
                             d3.select(this).transition()
@@ -837,11 +845,49 @@
                             return "Clustering coefficient: " + cluster_coeff[d.name];
                             });
                         d3.select(this).raise();
-                        
                     })
                     .on('mouseout', function(d) {
                         d3.selectAll('#tooltip').remove();
                     })
+
+                    // Legend
+                    var legend_network = svg.append("g")
+                        .attr("id", "legend-network")
+                        .attr("transform", "translate(300, 30)")
+
+                    // var minRadius = 2;
+                    // return minRadius + (d.weight / highestVal) * 20;
+
+                    legend_network.append("text")
+                        .attr("class", "diagram-text")
+                        .text("Page Rank");
+
+                    var legend_pr_sample = [0.1, 0.3, 0.5, 0.7, 0.9]
+
+                    var legend_pr = legend_network.selectAll("circle")
+                        .data(legend_pr_sample)
+                        .enter()
+                        .append("g")
+
+                    legend_pr.append("circle")
+                        .attr("class", "circle")
+                        .attr("r", function(d) {
+                            return 2 + d * 20;
+                        })
+                        .attr("transform", function(d, i) {
+                            return "translate(" + (70 + i * 50) + " , -3)"
+                        })
+                        .style("fill", "#7bccc4");
+
+                    legend_pr.append("text")
+                        .attr("class", "diagram-text")
+                        .attr("x", function(d, i) {
+                            return 55 + i * 50
+                        })
+                        .attr("y", 30)
+                        .text(function(d) {
+                            return "" + parseFloat(d * highestVal, 4).toFixed(4);
+                        })
                     
                     // add the curvy lines
                     function tick() {
@@ -904,7 +950,7 @@
                                 return "Page rank: " + page_rank[d.name];
                                 });
                             tooltip.append('text')
-                                .attr('id', 'tooltip')
+                                .attr('id', 'tooltip—drag')
                                 .attr('class', 'diagram-text')
                                 .attr("x", -150 + tooltipx)
                                 .attr("y", -30 + tooltipy)
@@ -958,7 +1004,6 @@
                     .attr('transform', 'translate(30,15)');
 
                     gThreshold.call(sliderThreshold);
-
                 }).catch(function(error) {
                     console.log(error);
                 });
